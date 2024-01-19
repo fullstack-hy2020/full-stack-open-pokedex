@@ -4,4 +4,4 @@ import App from './App'
 import './styles.css'
 
 // eslint-disable-next-line no-undef
-ReactDOM.createRoot(<App />, document.getElementById('app'))
+ReactDOM.render(<App />, document.getElementById('app'))
