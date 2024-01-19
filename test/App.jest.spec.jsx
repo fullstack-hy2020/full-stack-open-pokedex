@@ -28,6 +28,7 @@ describe('<App />', () => {
     axiosMock.get.mockRejectedValueOnce(new Error())
     await act(async () => {
       render(<Router><App/></Router>)
+
     })
     expect(screen.getByTestId('error')).toBeVisible()
   })
