@@ -36,7 +36,8 @@ jobs:
           start: npm run start-prod
           wait-on: http://localhost:5000
   
-  bump_and_tag:     
+  bump_and_tag:
+    if: ${{ github.event_name == 'push' }}     
     needs: simple_deployment_pipeline
     runs-on: ubuntu-20.04
     permissions:
@@ -52,7 +53,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         WITH_V: true
         DEFAULT_BUMP: patch
-        DRY_RUN: true
 
   deploy_to_fly:
     if: ${{ github.event_name == 'push' }}
