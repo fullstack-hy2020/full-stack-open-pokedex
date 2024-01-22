@@ -36,8 +36,7 @@ jobs:
           start: npm run start-prod
           wait-on: http://localhost:5000
   
-  bump_and_tag:
-    if: ${{ github.event_name == 'push' }}        
+  bump_and_tag:     
     needs: simple_deployment_pipeline
     runs-on: ubuntu-20.04
     steps:
