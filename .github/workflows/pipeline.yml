@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
 
 jobs:
   simple_deployment_pipeline:
@@ -25,7 +28,7 @@ jobs:
       
       - name: Test
         run: npm run test
-        
+
       - name: e2e tests
         uses: cypress-io/github-action@v5
         with:
