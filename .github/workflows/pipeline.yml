@@ -37,6 +37,7 @@ jobs:
           wait-on: http://localhost:5000 
 
   deploy_to_fly:
+    if: ${{ github.event_name == 'push' }}
     needs: simple_deployment_pipeline
     runs-on: ubuntu-latest
     concurrency: deploy-group
