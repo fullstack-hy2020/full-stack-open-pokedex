@@ -73,8 +73,6 @@ jobs:
           severity: info
           details: Test Succeeded!
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-      - name: Deliberate Fail Step
-        run: exit 1
       - name: Failed deployment notification
         uses: rjstone/discord-webhook-notify@v1
         if: failure()
