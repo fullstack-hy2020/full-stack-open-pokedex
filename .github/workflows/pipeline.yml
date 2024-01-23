@@ -38,7 +38,7 @@ jobs:
   
   bump_and_tag:
     if: ${{ github.event_name == 'push' && !contains((github.event.commits.*.message), '#skip') }}     
-    needs: simple_deployment_pipeline
+    needs: [simple_deployment_pipeline]
     runs-on: ubuntu-20.04
     permissions:
       contents: write
@@ -56,7 +56,7 @@ jobs:
 
   deploy_to_fly:
     if: ${{ github.event_name == 'push' && !contains((github.event.commits.*.message), '#skip') }}
-    needs: simple_deployment_pipeline
+    needs: [simple_deployment_pipeline]
     runs-on: ubuntu-20.04
     concurrency: deploy-group
     steps:
@@ -68,7 +68,7 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   notifications:
-    needs: deploy_to_fly
+    needs: [deploy_to_fly]
     runs-on: ubuntu-20.04
     concurrency: deploy-group
     steps:
@@ -85,18 +85,7 @@ jobs:
         if: failure()
         with:
             severity: error
-            details: Test Failed!
-            Repository: ${{ github.repository }}
-            Branch: ${{ github.ref }}
-            Commit: ${{ github.sha }}
-            Event: ${{ github.event_name }}
+            details: Test Failed! ${{ github.sha }}
             webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-      - name: Test Cancelled
-        uses: rjstone/discord-webhook-notify@v1
-        if: cancelled()
-        with:
-            severity: warn
-            details: Test Cancelled!
-            webhookUrl: ${{ secrets.DISCORD_WEBHOOK }} 
   
   
