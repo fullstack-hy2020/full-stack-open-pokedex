@@ -1,0 +1,30 @@
+on:
+  schedule:
+    - cron: '30 22 * * 2'
+
+jobs:
+  health-check:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check the deployed service URL
+        uses: jtalk/url-health-check-action@v3
+        with:
+          url: https://pokedex-wm.fly.dev/
+          max-attempts: 3
+          retry-delay: 5s # Optional, only applicable to max-attempts > 1
+      
+      - name: Successful health check
+        uses: rjstone/discord-webhook-notify@v1
+        if: success()
+        with:
+          severity: info
+          details: Test Succeeded!
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+      
+      - name: Failed health check
+        uses: rjstone/discord-webhook-notify@v1
+        if: failure()
+        with:
+            severity: error
+            details: Test Failed! ${{ github.sha }}
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
