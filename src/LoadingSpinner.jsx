@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 
 const LoadingSpinner = () => (
   <img
@@ -6,6 +6,6 @@ const LoadingSpinner = () => (
     alt='Loading...'
     src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'
   />
-);
+)
 
-export default LoadingSpinner;
+export default LoadingSpinner

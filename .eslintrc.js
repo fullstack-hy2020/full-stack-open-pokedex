@@ -1,11 +1,9 @@
 module.exports = {
   env: {
-    commonjs: true,
-    es2021: true,
     browser: true,
     es6: true,
-    node: true,
     'jest/globals': true,
+    node: true,
   },
   extends: ['eslint:recommended', 'plugin:react/recommended'],
   parserOptions: {
@@ -20,7 +18,7 @@ module.exports = {
     indent: ['error', 2],
     'linebreak-style': ['error', 'unix'],
     quotes: ['error', 'single'],
-    semi: ['error', 'always'],
+    semi: ['error', 'never'],
     eqeqeq: 'error',
     'no-trailing-spaces': 'error',
     'object-curly-spacing': ['error', 'always'],
@@ -28,4 +26,4 @@ module.exports = {
     'no-console': 'error',
     'react/prop-types': 0,
   },
-};
+}
