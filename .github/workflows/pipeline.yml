@@ -42,8 +42,8 @@ jobs:
         uses: rjstone/discord-webhook-notify@v1
         with:
           severity: info
-          details: GREAT SUCCESS
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          details: 'A new version of pokedex deployed'
 
   tag_release:
     needs: [simple_deployment_pipeline]
@@ -69,6 +69,6 @@ jobs:
       - name: Notify failure on Discord
         uses: rjstone/discord-webhook-notify@v1
         with:
-          severity: error
-          details: EPIC FAIL
+          severity: error          
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          details: 'Commit ${{ github.sha }} by ${{ github.actor }} broke the build'
