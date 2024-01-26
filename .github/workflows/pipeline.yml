@@ -37,6 +37,15 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
+      - name: Notify success on Discord
+        if: ${{ github.event_name == 'push' && success() }}
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: info
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          description: '## A new version has been deployed'
+          details: 'to https://aigar-pokedex.fly.dev/ by **${{ github.actor }}**'
+
   tag_release:
     needs: [simple_deployment_pipeline]
     runs-on: ubuntu-20.04
@@ -52,3 +61,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
+
+  failure_notification:
+    if: failure()
+    needs: [simple_deployment_pipeline, tag_release]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Notify failure on Discord
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: error          
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          description: '## Build failed'
+          details: 'commit https://github.com/${{ github.repository }}/commit/${{ github.sha }} by **${{ github.actor }}** broke the build'
