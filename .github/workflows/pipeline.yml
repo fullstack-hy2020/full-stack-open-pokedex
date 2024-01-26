@@ -43,7 +43,7 @@ jobs:
         with:
           severity: info
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          description: '##A new version has been deployed'
+          description: '## A new version has been deployed'
           details: 'to https://aigar-pokedex.fly.dev/ by **${{ github.actor }}**'
 
   tag_release:
@@ -73,4 +73,4 @@ jobs:
           severity: error          
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
           description: '##Build failed'
-          details: 'Commit https://github.com/${{ github.repository }}/commit/${{ github.sha }} by **${{ github.actor }}** broke the build'
+          details: '- commit https://github.com/${{ github.repository }}/commit/${{ github.sha }} - by **${{ github.actor }}** broke the build'
