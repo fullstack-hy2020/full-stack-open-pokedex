@@ -72,5 +72,5 @@ jobs:
         with:
           severity: error          
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          description: '##Build failed'
+          description: '## Build failed'
           details: '- commit https://github.com/${{ github.repository }}/commit/${{ github.sha }} - by **${{ github.actor }}** broke the build'
