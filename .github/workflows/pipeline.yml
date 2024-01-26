@@ -71,4 +71,4 @@ jobs:
         with:
           severity: error          
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          details: 'Commit ${{ github.sha }} by ${{ github.actor }} broke the build'
+          details: 'Commit [link to commit](https://github.com/${{ github.repository }}/commit/${{ github.sha }}) -by **${{ github.actor }}** broke the build'
