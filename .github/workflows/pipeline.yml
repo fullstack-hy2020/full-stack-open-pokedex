@@ -37,6 +37,24 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
+      - name: Notify success on Discord
+        if: success()
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: info
+          username: Tonk Badonkadonk
+          color: '#ff00aa'
+          avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png
+          description: >
+            Author: ${{ github.actor }} \n
+            Repository: ${{ github.repository }}
+          details: >
+            Message: ${{ github.event.head_commit.message }} \n
+            Branch: ${{ github.ref }}
+          footer: Friday deployments are the best
+          text: A new version of pokedex successfully deployed!
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+
   tag_release:
     needs: [simple_deployment_pipeline]
     runs-on: ubuntu-20.04
@@ -52,3 +70,28 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
+
+  failure_notification:
+    if: failure()
+    needs: [simple_deployment_pipeline, tag_release]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Notify failure on Discord
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: error
+          username: Tonk Badonkadonk
+          color: '#ff0000'
+          avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png
+          description: >
+            Build or deployment failed! \n
+            Blame this guy: ${{ github.actor }} \n
+            Repository: ${{ github.repository }}
+          details: >
+            Failure details: \n
+            Commit SHA: ${{ github.sha }} \n
+            Commit Message: ${{ github.event.head_commit.message }} \n
+            Branch: ${{ github.ref }}
+          footer: Friday deployments are the best
+          text: EPIC FAIL
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
