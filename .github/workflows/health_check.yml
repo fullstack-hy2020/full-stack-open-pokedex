@@ -2,7 +2,7 @@ name: Periodic Health Check
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '* * * * *'
   push:
 
 jobs:
@@ -12,7 +12,7 @@ jobs:
       - name: Check the deployed apps URL
         uses: jtalk/url-health-check-action@v3
         with:
-          url: 'https://aigar-pokedex.fly.dev/health'
+          url: 'https://aigar-pokedex.fly.dev/health-boii'
 
       - name: Notify success on Discord
         if: success()
@@ -21,7 +21,7 @@ jobs:
           severity: info
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
           description: '## Periodic health check succeeded'
-          details: 'https://aigar-pokedex.fly.dev/ is up and running'
+          details: 'https://aigar-pokedex.fly.dev is up and running'
 
   failure_notification:
     if: failure()
@@ -34,4 +34,4 @@ jobs:
           severity: error          
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
           description: '## Periodic health check failed'
-          details: 'https://aigar-pokedex.fly.dev/ is having some issues'
+          details: 'https://aigar-pokedex.fly.dev is having some issues'
