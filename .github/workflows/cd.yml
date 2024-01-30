@@ -2,14 +2,15 @@ name: cd
 on:
   workflow_run:
     workflows:
-    - CI
+    - ci
     branches:
-    - master
+    - main 
     types:
     - completed
 jobs:
-  build:
-    runs-on: ubuntu-20.04
+  deploy:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-20.04
     steps:
+      - name: Trigger Render deploy
       - run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }} 
