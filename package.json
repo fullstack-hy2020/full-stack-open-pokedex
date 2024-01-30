@@ -7,13 +7,13 @@
     "dev": "vite --host",
     "start": "webpack-dev-server --open --mode development",
     "start-prod": "node app.js",
-    "start:test": "NODE_ENV=test webpack-dev-server --open --mode development",
     "test": "jest",
     "eslint": "eslint './**/*.{js,jsx}'",
     "eslint-fix": "eslint './**/*.{js,jsx}' --fix",
     "build": "webpack --mode production",
     "cypress:open": "cypress open",
-    "test:e2e": "npx cypress run --browser chrome"
+    "test:e2e": "npx cypress run --browser chrome",
+    "build-start-prod": "npm run build && npm run start-prod"
   },
   "repository": {
     "type": "git",
