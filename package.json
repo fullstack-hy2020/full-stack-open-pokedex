@@ -7,7 +7,6 @@
     "dev": "vite --host",
     "start": "webpack-dev-server --open --mode development",
     "start-prod": "node app.js",
-    "cypress-prod": "NODE_ENV=test node app.js",
     "start:test": "NODE_ENV=test webpack-dev-server --open --mode development",
     "test": "jest",
     "eslint": "eslint './**/*.{js,jsx}'",

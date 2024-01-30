@@ -8,6 +8,5 @@ app.use(express.static('dist'))
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
-  console.log(`node env ${process.env.NODE_ENV}`)
   console.log(`server started on port ${PORT}`)
 })
