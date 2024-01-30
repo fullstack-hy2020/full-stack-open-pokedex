@@ -1,0 +1,15 @@
+name: CD
+on:
+  workflow_run:
+    workflows:
+    - CI
+    branches:
+    - master
+    types:
+    - completed
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }} 
