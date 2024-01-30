@@ -17,12 +17,6 @@ jobs:
         with:
           node-version: '16'
       - run: npm install
-  lint:
-    needs: setup
-    steps:
       - run: npm run eslint
-  test:
-    needs: setup
-    steps:
       - run: npm run test
         
