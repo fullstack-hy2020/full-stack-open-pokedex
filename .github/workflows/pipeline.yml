@@ -4,9 +4,12 @@ on:
   push:
     branches:
       - main
+  pull_requests:
+    branches:
+      - master
 
 jobs:
-  lint:
+  setup:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
@@ -14,5 +17,12 @@ jobs:
         with:
           node-version: '16'
       - run: npm install
+  lint:
+    needs: setup
+    steps:
       - run: npm run eslint
+  test:
+    needs: setup
+    steps:
+      - run: npm run test
         
