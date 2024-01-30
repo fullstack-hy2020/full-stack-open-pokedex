@@ -6,7 +6,10 @@ on:
       - main
   pull_request:
     branches:
-      - master
+      - main 
+    types:
+      - opened
+      - synchronize
 
 jobs:
   build:
