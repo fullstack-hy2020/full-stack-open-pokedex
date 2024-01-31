@@ -36,24 +36,6 @@ jobs:
           start: npm run start-prod
           wait-on: http://localhost:5000
   
-  bump_and_tag:
-    if: ${{ github.event_name == 'push' && !contains((github.event.commits.*.message), '#skip') }}     
-    needs: simple_deployment_pipeline
-    runs-on: ubuntu-20.04
-    permissions:
-      contents: write
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        ref: ${{ github.event.pull_request.merge_commit_sha }}
-        fetch-depth: '0'
-    - name: Bump version and push tag
-      uses: anothrNick/github-tag-action@c360518fb8131e99795f8208f8a6105ceca55ec2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        WITH_V: true
-        DEFAULT_BUMP: patch
-
   deploy_to_fly:
     if: ${{ github.event_name == 'push' && !contains((github.event.commits.*.message), '#skip') }}
     needs: simple_deployment_pipeline
@@ -80,3 +62,21 @@ jobs:
             severity: error
             details: Test Failed! ${{ github.sha }}
             webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+  
+  bump_and_tag:
+    if: ${{ github.event_name == 'push' && !contains((github.event.commits.*.message), '#skip') }}     
+    needs: simple_deployment_pipeline
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.pull_request.merge_commit_sha }}
+        fetch-depth: '0'
+    - name: Bump version and push tag
+      uses: anothrNick/github-tag-action@c360518fb8131e99795f8208f8a6105ceca55ec2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        WITH_V: true
+        DEFAULT_BUMP: patch
