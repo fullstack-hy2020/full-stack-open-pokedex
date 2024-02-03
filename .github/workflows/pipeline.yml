@@ -34,6 +34,22 @@ jobs:
       if: ${{ github.event_name == 'push' && !contains( join(github.event.commits.*.message, ', ') , '#skip') }}
       env:
         FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    - name: Deploy Success
+      uses: rjstone/discord-webhook-notify@v1
+      if: ${{ success() }}
+      with:
+          severity: info
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          description: to https://pokedex.fly.dev/ by AUVTE0.
+          text: A new version of Pokedex was deployed
+    - name: Deploy Failure
+      uses: rjstone/discord-webhook-notify@v1
+      if: ${{ failure() }}
+      with:
+          severity: error
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          description: commit ${{ github.event.head_commit }} by AUVTE0 broke the build.
+          text: Deploy failed.
   tag_release:
     needs: [simple_deployment_pipeline]
     runs-on: ubuntu-20.04
