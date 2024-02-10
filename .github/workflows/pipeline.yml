@@ -24,7 +24,7 @@ jobs:
             - name: e2e tests
               uses: cypress-io/github-action@v5
               with:
-                command: npm run test:e2e
+                command: npm run test:e2e:headless
                 start: npm run start-prod
                 browser: chrome
                 wait-on: http://localhost:5000
