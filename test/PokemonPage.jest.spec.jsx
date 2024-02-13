@@ -9,16 +9,16 @@ import { MemoryRouter } from 'react-router-dom'
 
 jest.mock('axios')
 
-const previous = {
-  url: 'https://pokeapi.co/api/v2/pokemon/132/',
-  name: 'ditto',
-  id: 132
-}
-const next = {
-  url: 'https://pokeapi.co/api/v2/pokemon/134/',
-  name: 'vaporeon',
-  id: 134
-}
+// const previous = {
+//   url: 'https://pokeapi.co/api/v2/pokemon/132/',
+//   name: 'ditto',
+//   id: 132
+// }
+// const next = {
+//   url: 'https://pokeapi.co/api/v2/pokemon/134/',
+//   name: 'vaporeon',
+//   id: 134
+// }
 
 const pokemonList = {
   id: 133,
@@ -141,5 +141,5 @@ describe('<PokemonPage />', () => {
 
     expect(screen.queryByText('Previous')).toBeNull()
     expect(screen.queryByText('Next')).toBeNull()
-  })  
+  })
 })
