@@ -10,9 +10,8 @@ app.get("/version", (req, res) => {
   res.send("1"); // change this string to ensure a new version deployed
 });
 
-app.get("/health", () => {
-  // eslint-disable-next-line no-constant-condition
-  if (true) throw "error...  ";
+app.get("/health", (req, res) => {
+  res.send("ok");
 });
 
 app.listen(PORT, () => {
