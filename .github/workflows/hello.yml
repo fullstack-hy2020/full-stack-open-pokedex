@@ -39,8 +39,9 @@ jobs:
         run: npm ci  # using 'npm ci' is recommended in CI/CD environments for faster, more reliable installs
 
       - name: Start Server
-        run: npm run start-prod &
-        background: true
+        run: |
+          npm run start-prod &
+          echo "Server started in the background"
 
       - name: Run Cypress E2E Tests (Headless)
         uses: cypress-io/github-action@v5
