@@ -17,6 +17,8 @@ jobs:
           node-version: '14'
       - name: Install dependencies
         run: npm install
+      - name: Build
+        run: npm run build
       - name: Start Server
         run: |
           npm run start-prod &
@@ -26,7 +28,7 @@ jobs:
         with:
           command: npm run test:e2e:headless
           wait-on: http://localhost:5000
-          wait-on-timeout: 10
+          wait-on-timeout: 30
 
   directory_content_job:
     runs-on: ubuntu-20.04
