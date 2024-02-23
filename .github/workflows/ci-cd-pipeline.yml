@@ -6,27 +6,8 @@ on:
       - main
 
 jobs:
-  hello_world_job:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Say hello
-        run: echo "Hello World! Hola mundo"
-
-  date_job:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Now it is
-        run: date -u
-
-  directory_content_job:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Directory content
-        run: ls -l
-
   cypress_job:
     runs-on: ubuntu-20.04
-    needs: simple_deployment_pipeline
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -47,6 +28,13 @@ jobs:
           wait-on: http://localhost:5000
           wait-on-timeout: 60
 
+  directory_content_job:
+    runs-on: ubuntu-20.04
+    needs: cypress_job
+    steps:
+      - name: Directory content
+        run: ls -l
+
   simple_deployment_pipeline:
     runs-on: ubuntu-20.04
     needs: directory_content_job
@@ -61,3 +49,17 @@ jobs:
         run: npm run eslint
       - name: Run test
         run: npm run test
+
+  hello_world_job:
+    runs-on: ubuntu-20.04
+    needs: simple_deployment_pipeline
+    steps:
+      - name: Say hello
+        run: echo "Hello World! Hola mundo"
+
+  date_job:
+    runs-on: ubuntu-20.04
+    needs: hello_world_job
+    steps:
+      - name: Now it is
+        run: date -u
