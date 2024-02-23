@@ -46,37 +46,22 @@ jobs:
           wait-on: http://localhost:5000
           wait-on-timeout: 30
 
-deploy:
-  needs: e2e_test
-  runs-on: ubuntu-latest
-  if: github.ref == 'refs/heads/main'
-  steps:
-    - uses: actions/checkout@v3
-    - name: Set up Node
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'
-    - name: Install dependencies
-      run: npm install
-    - name: Build for production
-      run: npm run build
-    - name: Deploy to Render
-      env:
-        deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-      run: |
-        curl "$deploy_url"
-
-  auxiliary_jobs:
-    needs: deploy
+  deploy:
+    needs: e2e_test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        job: [hello_world, date_job]
+    if: github.ref == 'refs/heads/main'
     steps:
-      - name: Execute Job
+      - uses: actions/checkout@v3
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install dependencies
+        run: npm install
+      - name: Build for production
+        run: npm run build
+      - name: Deploy to Render
+        env:
+          deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
-          if [ "${{ matrix.job }}" == "hello_world" ]; then
-            echo "Hello World! Hola mundo"
-          elif [ "${{ matrix.job }}" == "date_job" ]; then
-            date -u
-          fi
+          curl "$deploy_url"
