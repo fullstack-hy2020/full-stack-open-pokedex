@@ -46,17 +46,18 @@ jobs:
           wait-on: http://localhost:5000
           wait-on-timeout: 30
 
-  deploy:
-    needs: e2e_test
-    runs-on: ubuntu-latest
-    # Only run this job if it's the main branch
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Deploy to Render
-        env:
-          deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-        run: |
-          curl "$deploy_url"
+deploy:
+  needs: e2e_test
+  runs-on: ubuntu-latest
+  if: github.ref == 'refs/heads/main'
+  steps:
+    - name: Build for production
+      run: npm run build
+    - name: Deploy to Render
+      env:
+        deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+      run: |
+        curl "$deploy_url"
 
   auxiliary_jobs:
     needs: deploy
