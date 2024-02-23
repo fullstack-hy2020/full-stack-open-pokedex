@@ -27,9 +27,17 @@ jobs:
   cypress_job:
     runs-on: ubuntu-20.04
     steps:
-    - name: e2e tests
-      uses: cypress-io/github-action@v5
-      with:
-        command: npm run test:e2e
-        start: npm run start-prod
-        wait-on: http://localhost:5000
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install dependencies
+        run: npm install
+      - name: Run Cypress E2E Tests
+        uses: cypress-io/github-action@v5
+        with:
+          command: npm run test:e2e
+          start: npm run start-prod
+          wait-on: http://localhost:5000
