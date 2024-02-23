@@ -13,6 +13,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Install Dependencies
         run: npm install
       - name: Check style
@@ -21,5 +22,8 @@ jobs:
         run: npm run build
       - name: Test
         run: npm run test
-
+      - name: Deploy
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
