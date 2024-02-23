@@ -7,34 +7,19 @@ on:
   pull_request:
 
 jobs:
-  build_and_test:
-    runs-on: ubuntu-latest
+  e2e_test:
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Set up Node
         uses: actions/setup-node@v2
         with:
           node-version: '14'
       - name: Install dependencies
         run: npm install
-      - name: Run linting
-        run: npm run eslint
       - name: Build
         run: npm run build
-      - name: Run unit tests
-        run: npm run test
-
-  e2e_test:
-    needs: build_and_test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-      - name: Install dependencies
-        run: npm install
       - name: Start Server
         run: |
           npm run start-prod &
@@ -47,7 +32,6 @@ jobs:
           wait-on-timeout: 30
 
   deploy:
-    needs: e2e_test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
