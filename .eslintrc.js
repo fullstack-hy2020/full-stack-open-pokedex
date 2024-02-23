@@ -4,11 +4,16 @@ module.exports = {
       'version': 'detect'
     }
   },
+  globals: {
+    cy: 'readonly',
+    Cypress: 'readonly',
+  },
   'env': {
     'browser': true,
     'es6': true,
     'jest/globals': true,
-    'node': true
+    'node': true,
+    // 'cypress': true
   },
   'extends': [
     'eslint:recommended',
@@ -22,7 +27,7 @@ module.exports = {
     'sourceType': 'module'
   },
   'plugins': [
-    'react', 'jest'
+    'react', 'jest', 'cypress'
   ],
   'rules': {
     'no-console': 'off',

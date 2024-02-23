@@ -1,23 +1,16 @@
-const { defineConfig } = require("cypress");
+const { defineConfig } = require('cypress')
 
 module.exports = defineConfig({
   component: {
     devServer: {
-      framework: "react",
-      bundler: "webpack",
-    },
-  },
-
-  component: {
-    devServer: {
-      framework: "react",
-      bundler: "webpack",
+      framework: 'react',
+      bundler: 'webpack',
     },
   },
 
   e2e: {
-    setupNodeEvents(on, config) {
+    setupNodeEvents() {
       // implement node event listeners here
     },
   },
-});
+})
