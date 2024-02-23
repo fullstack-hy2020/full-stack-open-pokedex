@@ -29,6 +29,5 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           command: npm run test:e2e:headless
-          start: npm run start-prod
           wait-on: http://localhost:5000
           wait-on-timeout: 60 # optional: adjust timeout as needed
