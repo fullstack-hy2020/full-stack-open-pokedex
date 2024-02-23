@@ -1,24 +1,74 @@
-# .github/workflows/ci.yml
+name: Combined CI/CD Pipeline
 
 on:
-  pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
+  pull_request:
 
 jobs:
-  ci:
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Test
-        run: |
-          npm install
-          npm run test
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install dependencies
+        run: npm install
+      - name: Run linting
+        run: npm run eslint
+      - name: Build
+        run: npm run build
+      - name: Run unit tests
+        run: npm run test
 
-      - name: Deploy
-        # Only run this step if the branch is main
-        if: github.ref == 'refs/heads/main'
+  e2e_test:
+    needs: build_and_test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install dependencies
+        run: npm install
+      - name: Start Server
+        run: |
+          npm run start-prod &
+          echo "Server started in the background"
+      - name: Run Cypress E2E Tests (Headless)
+        uses: cypress-io/github-action@v5
+        with:
+          command: npm run test:e2e:headless
+          wait-on: http://localhost:5000
+          wait-on-timeout: 30
+
+  deploy:
+    needs: e2e_test
+    runs-on: ubuntu-latest
+    # Only run this job if it's the main branch
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to Render
         env:
           deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
           curl "$deploy_url"
+
+  auxiliary_jobs:
+    needs: deploy
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        job: [hello_world, date_job]
+    steps:
+      - name: Execute Job
+        run: |
+          if [ "${{ matrix.job }}" == "hello_world" ]; then
+            echo "Hello World! Hola mundo"
+          elif [ "${{ matrix.job }}" == "date_job" ]; then
+            date -u
+          fi
