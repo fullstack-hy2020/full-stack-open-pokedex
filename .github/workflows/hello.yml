@@ -29,15 +29,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Set up Node
         uses: actions/setup-node@v2
         with:
           node-version: '14'
+
       - name: Install dependencies
-        run: npm install
-      - name: Run Cypress E2E Tests
+        run: npm ci  # using 'npm ci' is recommended in CI/CD environments for faster, more reliable installs
+
+      - name: Start Server
+        run: npm run start-prod &
+        background: true
+
+      - name: Run Cypress E2E Tests (Headless)
         uses: cypress-io/github-action@v5
         with:
-          command: npm run test:e2e
+          command: npm run test:e2e:headless
           start: npm run start-prod
           wait-on: http://localhost:5000
+          wait-on-timeout: 60 # optional: adjust timeout as needed
