@@ -36,7 +36,7 @@ jobs:
           node-version: '14'
 
       - name: Install dependencies
-        run: npm ci  # using 'npm ci' is recommended in CI/CD environments for faster, more reliable installs
+        run: npm install
 
       - name: Start Server
         run: |
