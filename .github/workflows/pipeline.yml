@@ -15,7 +15,7 @@ jobs:
           node-version: "16"
       - name: Install dependencies
         run: npm install
-      - name: Chck Lint
+      - name: Check Lint
         run: npm run eslint
       - name: Build
         run: npm run build
@@ -28,7 +28,8 @@ jobs:
           start: npm run start-prod
           wait-on: http://localhost:5000
       - name: Render Deploy
-        uses: sws2apps/render-deployment@main
+        uses: bankfliptech/deploy-to-render@v1
         with:
           serviceId: ${{ secrets.RENDER_SERVICE_ID }}
           apiKey: ${{ secrets.RENDER_API_KEY }}
+          deployHookURL: ${{ secrets.RENDER_DEPLOY_HOOK }}
