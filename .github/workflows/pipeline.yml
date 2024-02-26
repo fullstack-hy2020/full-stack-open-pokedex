@@ -28,8 +28,4 @@ jobs:
           start: npm run start-prod
           wait-on: http://localhost:5000
       - name: Render Deploy
-        uses: bankfliptech/deploy-to-render@v1
-        with:
-          serviceId: ${{ secrets.RENDER_SERVICE_ID }}
-          apiKey: ${{ secrets.RENDER_API_KEY }}
-          deployHookURL: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
