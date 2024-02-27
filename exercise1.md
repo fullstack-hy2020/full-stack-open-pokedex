@@ -1,6 +1,6 @@
 # CI/CD Musings
 
-__We’ll discuss briefly .Net core application building and continuous integration and Azure DevOps.__
+We’ll discuss briefly .Net core application building and continuous integration and Azure DevOps.
 
 The building of .Net apps has changed a lot since the introduction of .Net Core – nowadays all the functionality is baked into .Net CLI, which offers the functionality for restoring dependencies, building, running unit-tests and packaging the application. Azure DevOps has tasks which can be used in pipeline to implement these things, but the .Net core tasks basically is just a wrapper for the CLI command, so a lot of time one just ends up using the CLI directly with a command line task, often because it’s more efficient to chain commands than to run everything as a separate step. 
 
