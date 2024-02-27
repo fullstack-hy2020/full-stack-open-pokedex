@@ -16,7 +16,11 @@ jobs:
         id: date
         run: 
             echo "NOW=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_ENV     
-      - name: Get current date
+      - name: Print current date
         id: print_date
         run: 
-            echo $NOW              
+            echo $NOW  
+      - name: Print current date
+        id: print_contents
+        run: 
+            ls -la                          
