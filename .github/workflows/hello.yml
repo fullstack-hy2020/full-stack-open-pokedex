@@ -21,6 +21,10 @@ jobs:
         run: 
             echo $NOW  
       - name: Print current date
-        id: print_contents
+        id: list_files
         run: 
-            ls -la                          
+            ls -la         
+      - name: Print current date
+        id: print_tree
+        run: 
+            tree                              
