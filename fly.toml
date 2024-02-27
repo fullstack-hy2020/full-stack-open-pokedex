@@ -1,0 +1,28 @@
+# fly.toml app configuration file generated for jk-pokedex on 2024-02-27T15:49:36+02:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'jk-pokedex'
+primary_region = 'ams'
+
+[build]
+
+[env]
+  PORT = "3000" # add this where PORT matches the internal_port below
+
+[processes]
+  app = "node app.js" # add this
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
