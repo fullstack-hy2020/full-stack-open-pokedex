@@ -26,6 +26,6 @@ jobs:
             ls -la         
       - name: List files in working directory
         id: print_tree
-        working-directory: ${GITHUB_WORKSPACE}
+        working-directory: ${{ github.workspace }} 
         run: 
             tree                              
