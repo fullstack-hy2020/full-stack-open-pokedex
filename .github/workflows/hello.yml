@@ -20,11 +20,12 @@ jobs:
         id: print_date
         run: 
             echo $NOW  
-      - name: Print current date
+      - name: List files
         id: list_files
         run: 
             ls -la         
-      - name: Print current date
+      - name: List files in working directory
         id: print_tree
+        working-directory: ${GITHUB_WORKSPACE}
         run: 
             tree                              
