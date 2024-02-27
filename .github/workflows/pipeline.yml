@@ -31,9 +31,12 @@ jobs:
     name: Deploy app
     runs-on: ubuntu-latest
     concurrency: deploy-group    # optional: ensure only one action runs at a time
+    needs: build
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Install dependencies 
+        run: npm install        
       - name: Build
         run: npm run build
       - run: flyctl deploy --remote-only
