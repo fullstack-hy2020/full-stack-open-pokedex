@@ -31,9 +31,10 @@ jobs:
           command: npm run test:e2e
           start: npm run start-prod
           wait-on: http://localhost:5000
+  #Skip this job if a commit message in a pull request contains #skip  
   tag_release:
     needs: [build]
-    if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ github.ref == 'refs/heads/main' }} && ! contains(github.event.pull_request.body, '#skip')    
     runs-on: ubuntu-20.04
     steps:  
     - uses: actions/checkout@v4
