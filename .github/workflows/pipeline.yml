@@ -33,12 +33,14 @@ jobs:
           wait-on: http://localhost:5000
   #Skip this job if a commit message in a pull request contains #skip  
   tag_release:
-    needs: [build]
-    if: ${{ github.ref == 'refs/heads/main' }} && ! contains(github.event.pull_request.body, '#skip')    
+    needs: [build]    
+    if: ${{ github.ref == 'refs/heads/main' && !contains(github.event.pull_request.body, '#skip')}}
     runs-on: ubuntu-20.04
+    permissions:
+      contents: write
     steps:  
     - uses: actions/checkout@v4
-    - name: Bump version and push tag
+    - name: Bump version and push tag      
       uses: anothrNick/github-tag-action@1.67.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
