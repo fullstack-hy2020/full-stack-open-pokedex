@@ -31,10 +31,10 @@ jobs:
           command: npm run test:e2e
           start: npm run start-prod
           wait-on: http://localhost:5000
-  #Skip this job if a commit message in a pull request contains #skip  
+  #Okay, so have to check all commits that are linked to the push event, because a pull request can contain multiple commits and the PR body text does is not associated?
   tag_release:
     needs: [build]    
-    if: ${{ github.ref == 'refs/heads/main' && !contains(github.event.pull_request.body, '#skip')}}
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ''), '#skip')}}
     runs-on: ubuntu-20.04
     permissions:
       contents: write
