@@ -33,11 +33,11 @@ jobs:
           wait-on: http://localhost:5000
       - name: Discord Webhook Notify
         uses: rjstone/discord-webhook-notify@v1.0.4
-        if: success()
+        if: failure()
         with:
           severity: error
           description: Build failed.
-          details: 'commit ${{ github.sha }} by ${{ github.actor }} broke the build.'
+          details: 'commit ${{ github.event.head_commit.url }} by ${{ github.actor }} broke the build.'
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}          
   #Okay, so have to check all commits that are linked to the push event, because a pull request can contain multiple commits and the PR body text does is not associated?
   tag_release:
