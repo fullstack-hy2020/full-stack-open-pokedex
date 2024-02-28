@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Check if should skip
         env:
-          CONTAINS: ${{ contains(github.event.head_commit, '#skip') }}
+          CONTAINS: ${{ contains(github.event.head_commit.message, '#skip') }}
         run: echo "$CONTAINS"
         continue-on-error: true
       - uses: actions/checkout@v4
