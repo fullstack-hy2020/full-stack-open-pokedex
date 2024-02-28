@@ -33,7 +33,7 @@ jobs:
           wait-on: http://localhost:5000
       - name: Discord Webhook Notify
         uses: rjstone/discord-webhook-notify@v1.0.4
-        if: success()
+        if: failure()
         with:
           severity: error
           description: Build failed.
