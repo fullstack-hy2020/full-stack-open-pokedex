@@ -11,7 +11,6 @@ on:
 jobs:
   simple_deployment_pipeline:
     runs-on: ubuntu-20.04
-    if: ${{ github.event_name == 'push' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,22 +24,23 @@ jobs:
         run: npm run build
       - name: Testing
         run: npm run test
-      # - name: e2e tests
-      #   uses: cypress-io/github-action@v5
-      #   with:
-      #     command: npm run test:e2e
-      #     start: npm run start-prod
-      #     wait-on: http://localhost:5000
+        # - name: e2e tests
+        #   uses: cypress-io/github-action@v5
+        #   with:
+        #     command: npm run test:e2e
+        #     start: npm run start-prod
+        #     wait-on: http://localhost:5000
       - name: Trigger deployment
+        if: ${{ github.event_name == 'push' }}
         run: curl https://api.render.com/deploy/srv-cnbg4ula73kc73fh89v0?key=pvtAjiM-fUQ
   tag_release:
     needs: [simple_deployment_pipeline]
     runs-on: ubuntu-20.04
-    if: ${{ github.event_name == 'push' }}
     steps:
       - name: Bump version and push tag
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ''), '#skip')}}
         uses: anothrNick/github-tag-action@1.64.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
-          DEFAULT_BUMP: patch
+          DEFAULT_BUMP: "patch"
