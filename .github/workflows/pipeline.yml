@@ -1,0 +1,76 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Check style
+        run: npm run eslint
+      - name: build
+        run: npm run build
+      - name: test
+        run: npm run test
+      - name: e2e tests
+        uses: cypress-io/github-action@v5
+        with:
+          command: npm run test:e2e
+          start: npm run start-prod
+          wait-on: http://localhost:5000
+      - name: Trigger deployment
+        if: ${{ github.event_name == 'push' }}
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+      - name: Deployment success
+        if: ${{ success() && github.event_name == 'push' }}
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: info
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          avatarUrl: ${{ github.event.sender.avatar_url }}
+          description: to https://full-stack-open-pokedex-objh.onrender.com by ${{ github.event.head_commit.author.username }}
+          details: ''
+          text: A new version of Pokedex deployed
+      - name: Deployment failure
+        if: ${{ failure() }}
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: error
+          color: '#ff0000'
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          avatarUrl: ${{ github.event.sender.avatar_url }}
+          description: commit https://github.com/locodasi/full-stack-open-pokedex/commit/${{ github.event.pull_request.base.sha }} by ${{ github.event.pull_request.base.user.login }} broke the build :(
+          details: ''
+          text: Build failed
+        
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check commit messages for skip
+        env:
+          COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
+        run: |
+          if echo "$COMMIT_MESSAGES" | grep -q "#skip"; then
+            echo "Skipping tag release step"
+            exit 1  # exit with a neutral status to indicate skipping
+          fi
+      - name: Bump version and push tag
+        if: ${{ github.event_name == 'push' }}
+        uses: anothrNick/github-tag-action@1.67.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch 
