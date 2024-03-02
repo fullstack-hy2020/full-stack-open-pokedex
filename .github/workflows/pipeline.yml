@@ -19,17 +19,14 @@ jobs:
         run: npm run eslint
       - name: Build
         run: npm run build
-#      - name: Test runs
-#        run: npm run test
-#      - name: e2e tests
-#        uses: cypress-io/github-action@v5
-#        with:
-#          command: npm run test:e2e
-#          start: npm run start-prod
-#          wait-on: http://localhost:5000
-      - name: Render Deploy Action
-        uses: johnbeynon/render-deploy-action@v0.0.8
+      - name: Test runs
+        run: npm run test
+      - name: e2e tests
+        uses: cypress-io/github-action@v5
         with:
-          service-id: ${{ secrets.MY_RENDER_SERVICE_ID }}
-          api-key: ${{ secrets.MY_RENDER_API_KEY }}
+          command: npm run test:e2e
+          start: npm run start-prod
+          wait-on: http://localhost:5000
+      - name: Trigger deployment
+        run: curl https://api.render.com/deploy/srv-${{ secrets.MY_RENDER_SERVICE_ID }}?key=${{ secrets.MY_RENDER_API_KEY }}
       
