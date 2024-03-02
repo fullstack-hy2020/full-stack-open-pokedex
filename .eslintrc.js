@@ -37,7 +37,6 @@ module.exports = {
       'never'
     ],
     'eqeqeq': 'error',
-    'no-console': 'off',
     'no-trailing-spaces': 'error',
     'object-curly-spacing': [
       'error', 'always'
@@ -45,6 +44,7 @@ module.exports = {
     'arrow-spacing': [
       'error', { 'before': true, 'after': true }
     ],
+    'no-console': 'error',
     'react/prop-types': 0
   },
   'globals': {
