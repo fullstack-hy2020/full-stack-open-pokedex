@@ -7,8 +7,16 @@ on:
 
 jobs:
   say_hello_world:
-    runs-on: ubuntu-20.4
+    runs-on: ubuntu-latest
     steps:
     - name: Say Hello
       run: |
         echo "Hello World Workflow!"
+
+    - name: Log Date
+      run: |
+        date
+
+    - name: Directory Content
+      run: |
+        ls -l
