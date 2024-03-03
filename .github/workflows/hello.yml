@@ -12,3 +12,11 @@ jobs:
     - name: Say Hello
       run: |
         echo "Hello World Workflow!"
+
+    - name: Log Date
+      run: |
+        date
+
+    - name: Directory Content
+      run: |
+        ls -l
