@@ -33,3 +33,14 @@ jobs:
       #     wait-on: http://localhost:5000
       - name: Trigger deployment
         run: curl https://api.render.com/deploy/srv-cnbg4ula73kc73fh89v0?key=pvtAjiM-fUQ
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Bump version and push tag
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ''), '#skip')}}
+        uses: anothrNick/github-tag-action@1.64.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false
+          DEFAULT_BUM: patch
