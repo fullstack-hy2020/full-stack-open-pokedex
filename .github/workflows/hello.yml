@@ -11,7 +11,7 @@ jobs:
     steps:
     - name: Say Hello
       run: |
-        echo "Hello pull request"
+        echo "Hello pull request for real"
 
     - name: Log Date
       run: |
