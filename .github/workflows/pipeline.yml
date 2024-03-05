@@ -12,6 +12,8 @@ on:
 jobs:
   simple_deployment_pipeline:
     runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check-skip.outputs.skip }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -36,13 +38,21 @@ jobs:
           command: npm run test:e2e
           start: npm run start-prod
           wait-on: http://localhost:5000
+
+      - name: Check for skip
+        id: check-skip
+        env:
+          SKIP: ${{ contains(join(github.event.commits.*.message, ' '), '#skip') }}
+        run: |
+          echo "SKIP=$SKIP"
+          echo "::set-output name=skip::$SKIP"
       
       - name: Setup Flyctl
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ !steps.check-skip.outputs.skip && github.event_name == 'push' }}
         uses: superfly/flyctl-actions/setup-flyctl@master
 
       - name: Deploy
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ !steps.check-skip.outputs.skip && github.event_name == 'push' }}
         run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
@@ -53,7 +63,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Bump version and push tag
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ !needs.simple_deployment_pipeline.outputs.skip && github.event_name == 'push' }}
         uses: anothrNick/github-tag-action@1.67.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
