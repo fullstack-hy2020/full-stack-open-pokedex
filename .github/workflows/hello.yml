@@ -17,4 +17,4 @@ jobs:
           date
       - name: Display List
         run: |
-          ls --a
+          ls -l
