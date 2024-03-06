@@ -1,0 +1,44 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-20.04
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm install
+      - name: Check style
+        run: npm run eslint
+      - name: Build
+        run: npm run build
+      - name: Testing
+        run: npm run test
+      # - name: e2e tests
+      #   uses: cypress-io/github-action@v5
+      #   with:
+      #     command: npm run test:e2e
+      #     start: npm run start-prod
+      #     wait-on: http://localhost:5000
+      - name: Trigger deployment
+        run: curl https://api.render.com/deploy/srv-cnbg4ula73kc73fh89v0?key=pvtAjiM-fUQ
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@72cc9b65fd4cdd0de63b8dd7c098e1741ae0951a
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          WITH_V: false
