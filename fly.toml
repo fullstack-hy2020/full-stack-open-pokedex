@@ -8,6 +8,9 @@ primary_region = 'yul'
 
 [build]
 
+[deploy]
+  strategy = "bluegreen"
+
 [env]
   PORT = "3000" 
 
@@ -34,5 +37,4 @@ method = "GET"
 timeout = "5s"
 path = "/health"
 
-[deploy]
-  strategy = "bluegreen"
+
