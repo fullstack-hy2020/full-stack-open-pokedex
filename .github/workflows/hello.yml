@@ -11,4 +11,4 @@ jobs:
     steps:
       - name: Say Hello
         run: |
-          echno "Hello World!"
+          echo "Hello World!"
