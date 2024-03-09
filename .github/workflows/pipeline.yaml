@@ -16,4 +16,4 @@ jobs:
         - name: Install dependancies
           run: npm install 
         - name: linter
-          run: npm run lint
+          run: npm run eslint
