@@ -6,23 +6,14 @@ on:
       - main
 
 jobs:
-  hello_world_job:
+  combined_job:
     runs-on: ubuntu-20.04
     steps:
       - name: Say hello
-        run: |
-          echo "Hello World!"
+        run: echo "Hello World!"
+      
+      - name: now it is
+        run: date
 
-  date_job:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Date content
-        run: |
-          date
-
-  directory_job:
-    runs-on: ubuntu-20.04
-    steps:
       - name: Directory content
-        run: |
-          ls
+        run: ls
