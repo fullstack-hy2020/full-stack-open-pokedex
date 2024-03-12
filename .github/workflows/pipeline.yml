@@ -16,9 +16,15 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
       - name: Check style
         run: npm run eslint
-      - name: build
+
+      - name: Build
         run: npm run build
-      - name: test
+
+      - name: Test
         run: npm run test
+
+      - name: Trigger deployment
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
