@@ -5,7 +5,7 @@ import App from './App';
 import './styles.css';
 
 ReactDOM.createRoot(document.getElementById('app')).render(
-    <Router>
-        <App />
-    </Router>
+  <Router>
+    <App />
+  </Router>
 );
