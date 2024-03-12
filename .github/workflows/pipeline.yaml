@@ -27,3 +27,5 @@ jobs:
               command: npm run test:e2e
               start: npm run start-prod
               wait-on: http://localhost:5000
+        - name: Trigger Deployment
+          run: curl https://api.render.com/deploy/serv${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
