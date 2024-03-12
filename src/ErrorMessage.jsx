@@ -1,7 +1,7 @@
 import React from 'react'
 
 const ErrorMessage = ({ error }) => (
-  <div data-testid="error">An error on V3 occurred: {error.toString()}</div>
+  <div data-testid="error">An error occurred: {error.toString()}</div>
 )
 
 export default ErrorMessage
