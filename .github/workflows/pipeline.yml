@@ -31,3 +31,8 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+      - name: Trigger deployment
+        env:
+          deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          curl "$deploy_url"
