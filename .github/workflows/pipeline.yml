@@ -33,7 +33,19 @@ jobs:
         if: ${{ github.event_name == 'push' }}
         run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
 
+  version_bump:
+    needs: simple_deployment_pipeline
+    runs-on: ubuntu-20.04
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Bump version and push tag
         uses: anothrNick/github-tag-action@1.64.0
+        with:
+          default_bump: patch
+          release_branches: main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
