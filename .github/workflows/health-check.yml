@@ -1,0 +1,16 @@
+name: Periodic Health Check
+
+on:
+  push:
+  schedule:
+    - cron: '0 */6 * * *' # Runs every 6 hours
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if website is up
+        uses: luisfalconmx/url-health-check@v1
+        with:
+          url: 'https://full-stack-open-pokedex-ljkm.onrender.com'
+          http-status-code: 200
