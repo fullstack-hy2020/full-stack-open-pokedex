@@ -57,10 +57,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Success notification
-          if: ${{ success() }}
-          uses: Ilshidur/action-discord@master
-          with:
-            severity: Informational
-            text: A new version of Pokedex deployed
-            description: 'to https://full-stack-open-pokedex-ljkm.onrender.com by ${{ github.actor }}'
-            webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        if: ${{ success() }}
+        uses: Ilshidur/action-discord@master
+        with:
+          severity: Informational
+          text: A new version of Pokedex deployed
+          description: 'to https://full-stack-open-pokedex-ljkm.onrender.com by ${{ github.actor }}'
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
