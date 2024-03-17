@@ -35,6 +35,15 @@ jobs:
         if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message), '#skip') }}
         run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
 
+      - name: Build failure notification
+        if: ${{ failure() }}
+        uses: Ilshidur/action-discord@master
+        with:
+          severity: Error
+          text: Build failed
+          description: 'Build failed for commit ${{ github.sha }} made by ${{ github.actor }}. Check the repository for more details.'
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
   # Define the job for bumping the version and creating a new tag.
   # This job runs after the simple_deployment_pipeline job and also checks for '#skip' in commit messages.
   version_bump:
@@ -47,3 +56,11 @@ jobs:
         uses: anothrNick/github-tag-action@1.64.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Success notification
+          if: ${{ success() }}
+          uses: Ilshidur/action-discord@master
+          with:
+            severity: Informational
+            text: A new version of Pokedex deployed
+            description: 'to https://full-stack-open-pokedex-ljkm.onrender.com by ${{ github.actor }}'
+            webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
