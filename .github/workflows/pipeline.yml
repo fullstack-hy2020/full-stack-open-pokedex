@@ -42,7 +42,7 @@ jobs:
           severity: Error
           text: Build failed
           description: 'Build failed for commit ${{ github.sha }} made by ${{ github.actor }}. Check the repository for more details.'
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
   # Define the job for bumping the version and creating a new tag.
   # This job runs after the simple_deployment_pipeline job and also checks for '#skip' in commit messages.
@@ -63,4 +63,4 @@ jobs:
           severity: Informational
           text: A new version of Pokedex deployed
           description: 'to https://full-stack-open-pokedex-ljkm.onrender.com by ${{ github.actor }}'
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
