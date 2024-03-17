@@ -37,7 +37,7 @@ jobs:
 
       - name: Build failure notification
         if: ${{ failure() }}
-        uses: Ilshidur/action-discord@master
+        uses: rjstone/discord-webhook-notify@v1
         with:
           severity: Error
           text: Build failed
@@ -58,7 +58,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Success notification
         if: ${{ success() }}
-        uses: Ilshidur/action-discord@master
+        uses: rjstone/discord-webhook-notify@v1
         with:
           severity: Informational
           text: A new version of Pokedex deployed
