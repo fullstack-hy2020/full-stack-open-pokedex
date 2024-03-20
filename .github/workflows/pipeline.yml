@@ -1,0 +1,66 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # Define the job for testing, building, and deploying your code.
+  simple_deployment_pipeline:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4 # Check out the code in the GitHub action runner
+
+      # Install dependencies only if none of the commit messages contain '#skip'.
+      - name: Install dependencies
+        if: ${{ !contains(join(github.event.commits.*.message), '#skip') }}
+        run: npm install
+
+      # The rest of your steps should also check the same condition to ensure they are skipped if '#skip' is found.
+      - name: Check style
+        if: ${{ !contains(join(github.event.commits.*.message), '#skip') }}
+        run: npm run eslint
+
+      - name: Build
+        if: ${{ !contains(join(github.event.commits.*.message), '#skip') }}
+        run: npm run build
+
+      - name: Test
+        if: ${{ !contains(join(github.event.commits.*.message), '#skip') }}
+        run: npm run test
+
+      # This step deploys your project, but only if '#skip' was not found in any commit message.
+      - name: Trigger deployment
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message), '#skip') }}
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+
+      - name: Build failure notification
+        if: ${{ failure() }}
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: error
+          text: Build failed
+          description: 'Build failed for commit ${{ github.sha }} made by ${{ github.actor }}. Check the repository for more details.'
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+  # Define the job for bumping the version and creating a new tag.
+  # This job runs after the simple_deployment_pipeline job and also checks for '#skip' in commit messages.
+  version_bump:
+    needs: simple_deployment_pipeline # This job depends on the successful completion of the simple_deployment_pipeline job.
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message), '#skip') }}
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4 # Check out the code in the GitHub action runner, necessary for version bump.
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.64.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Success notification
+        if: ${{ success() }}
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: info
+          text: A new version of Pokedex deployed
+          description: 'to https://full-stack-open-pokedex-ljkm.onrender.com by ${{ github.actor }}'
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
