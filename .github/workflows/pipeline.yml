@@ -1,4 +1,4 @@
-name: Hello World!
+name: Pipeline
 
 on:
   push:
