@@ -1,0 +1,37 @@
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  a_test_job:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: github context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: event info
+        env:
+          EVENTS: ${{ toJson(github.event) }}
+        run: echo "$EVENTS"
+      - name: org
+        env:
+          ORG: ${{ toJson(github.event.organization) }}
+        run: echo "$ORG"
+      - name: number
+        env:
+          NUMBER: ${{ toJson(github.event.additions) }}
+        run: echo "$NUMBER"
+      - name: commits
+        env:
+          COMMITS: ${{ toJson(github.event.commits) }}
+        run: echo "$COMMITS"
+      - name: commit messages
+        env:
+          COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
+        run: echo "$COMMIT_MESSAGES"
