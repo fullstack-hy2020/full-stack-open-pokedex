@@ -25,9 +25,9 @@ jobs:
         run: echo "$COMMIT_MESSAGES"
       - name: check if should skip
         env:
-          MESSAGES_CONTAINS_SKIP: ${{ contains(join(toJson(github.event.commits.*.message)), '#skip') }}
-        run: echo "$MESSAGES_CONTAINS_SKIP"
+          MESSAGES_NOTCONTAINS_SKIP: ${{ !contains(join(toJson(github.event.commits.*.message)), '#skip') }}
+        run: echo "$MESSAGES_NOTCONTAINS_SKIP"
       - name: test check
         env:
-          MESSAGES_CONTAINS_TOMATO: ${{ contains(join(toJson(github.event.commits.*.message)), 'tomato') }}
-        run: echo "$MESSAGES_CONTAINS_TOMATO"
+          MESSAGES_NOTCONTAINS_TOMATO: ${{ !contains(join(toJson(github.event.commits.*.message)), 'tomato') }}
+        run: echo "$MESSAGES_NOTCONTAINS_TOMATO"
