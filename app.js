@@ -6,12 +6,10 @@ const PORT = process.env.PORT || 5000
 app.use(express.static('dist'))
 
 app.get('/version', (_req, res) => {
-  res.send('jade')
+  res.send('broken')
 })
 
-app.get('/health', (_req, res) => {
-  res.send('ok')
-})
+app.get('/health', () => {})
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
