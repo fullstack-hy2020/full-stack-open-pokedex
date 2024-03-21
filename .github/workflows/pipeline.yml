@@ -31,17 +31,17 @@ jobs:
           start: npm run start-prod
           wait-on: http://localhost:5000
       - name: Set up deployment using fly.io
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' && !contains(join(toJson(github.event.commits.*.message)), '#skip') }}
         uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Deploy using fly.io
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' && !contains(join(toJson(github.event.commits.*.message)), '#skip') }}
         run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
   tag_release:
     needs: [simple_deployment_pipeline]
     runs-on: ubuntu-20.04
-    if: ${{ github.event_name == 'push' }}
+    if: ${{ github.event_name == 'push' && !contains(join(toJson(github.event.commits.*.message)), '#skip') }}
     steps:
       - uses: actions/checkout@v4
       - name: Bump version and push tag
