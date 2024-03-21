@@ -1,4 +1,7 @@
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches: [main]
     types: [opened, synchronize]
@@ -16,13 +19,17 @@ jobs:
         env:
           EVENTS: ${{ toJson(github.event) }}
         run: echo "$EVENTS"
+      - name: org
+        env:
+          ORG: ${{ toJson(github.event.organization) }}
+        run: echo "$ORG"
       - name: number
         env:
-          NUMBER: ${{ toJson(github.event.number) }}
+          NUMBER: ${{ toJson(github.event.additions) }}
         run: echo "$NUMBER"
       - name: commits
         env:
-          COMMITS: ${{ github.event.commits }}
+          COMMITS: ${{ toJson(github.event.commits) }}
         run: echo "$COMMITS"
       - name: commit messages
         env:
