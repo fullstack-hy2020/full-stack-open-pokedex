@@ -15,23 +15,19 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
-      - name: event info
-        env:
-          EVENTS: ${{ toJson(github.event) }}
-        run: echo "$EVENTS"
-      - name: org
-        env:
-          ORG: ${{ toJson(github.event.organization) }}
-        run: echo "$ORG"
-      - name: number
-        env:
-          NUMBER: ${{ toJson(github.event.additions) }}
-        run: echo "$NUMBER"
       - name: commits
         env:
           COMMITS: ${{ toJson(github.event.commits) }}
         run: echo "$COMMITS"
       - name: commit messages
         env:
-          COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
+          COMMIT_MESSAGES: ${{ join(toJson(github.event.commits.*.message)) }}
         run: echo "$COMMIT_MESSAGES"
+      - name: check if should skip
+        env:
+          MESSAGES_CONTAINS_SKIP: ${{ contains(join(toJson(github.event.commits.*.message)), '#skip') }}
+        run: echo "$MESSAGES_CONTAINS_SKIP"
+      - name: test check
+        env:
+          MESSAGES_CONTAINS_TOMATO: ${{ contains(join(toJson(github.event.commits.*.message)), 'tomato') }}
+        run: echo "$MESSAGES_CONTAINS_TOMATO"
