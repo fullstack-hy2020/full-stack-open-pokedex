@@ -1,5 +1,8 @@
 {
   "version": 2,
   "builds": [{ "src": "dist/**", "use": "@vercel/static" }],
-  "routes": [{ "src": "/", "dest": "dist/index.html" }]
+  "routes": [
+    { "src": "/", "dest": "dist/index.html" },
+    { "src": "/(.+)", "dest": "dist/$1" }
+  ]
 }
