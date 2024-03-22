@@ -59,5 +59,6 @@
   },
   "jest": {
     "testEnvironment": "jsdom"
-  }
+  },
+  "proxy": "http://localhost:5000"
 }
