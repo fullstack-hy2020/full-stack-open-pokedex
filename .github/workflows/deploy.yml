@@ -6,7 +6,7 @@ env:
 
 on:
   workflow_run:
-    workflows: [tests]
+    workflows: [Tests pipeline]
     types:
       - completed
 
