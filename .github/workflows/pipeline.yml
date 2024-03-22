@@ -5,10 +5,9 @@ env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
 
 on:
-  workflow_run:
-    workflows: [Tests pipeline]
-    types:
-      - completed
+  push:
+    branches:
+      - main
 
 jobs:
   simple_deployment_pipeline:
@@ -20,8 +19,21 @@ jobs:
           node-version: "20"
       - name: Install dependencies
         run: npm install
+      - name: lint
+        run: npm run eslint
+      - name: Jest Test
+        if: success()
+        run: npm run test
       - name: Build
+        if: success()
         run: npm run build
+      - name: E2E Test
+        if: success()
+        uses: cypress-io/github-action@v5
+        with:
+          command: npm run test:e2e
+          start: npm run start-prod
+          wait-on: http://localhost:5000
       - name: Install Vercel CLI
         if: success()
         run: npm install --global vercel@canary
