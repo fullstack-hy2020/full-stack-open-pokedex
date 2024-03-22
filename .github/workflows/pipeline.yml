@@ -60,7 +60,7 @@ jobs:
         with:
           severity: info
           text: New build of Pokédex completed!
-          description: to https://full-stack-open-pokedex-yaups.fly.dev/ by ${{ github.commits[0].committer.username }}.
+          description: to https://full-stack-open-pokedex-yaups.fly.dev/ by ${{ github.event.commits[0].committer.username }}.
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
       - name: Notify of Build Failure
         uses: rjstone/discord-webhook-notify@v1
@@ -68,5 +68,5 @@ jobs:
         with:
           severity: error
           text: New build of Pokédex failed!
-          description: commit ${{ github.event.commits[0].url }} by user ${{ github.committer.username }} broke the build.
+          description: commit ${{ github.event.commits[0].url }} by user ${{ github.event.commits[0].committer.username }} broke the build.
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
