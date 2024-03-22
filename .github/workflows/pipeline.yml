@@ -7,7 +7,7 @@ on:
 
 jobs:
   simple_deployment_pipeline:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -15,18 +15,25 @@ jobs:
           node-version: "20"
       - name: Install dependencies
         run: npm install
-      - name: Check style
+      - name: lint
         run: npm run eslint
-      - name: Test
+      - name: Jest Test
         if: success()
         run: npm run test
       - name: Build
         if: success()
         run: npm run build
-      - name: Test E2E
+      - name: E2E Test
         if: success()
         uses: cypress-io/github-action@v5
         with:
           command: npm run test:e2e
           start: npm run start-prod
           wait-on: http://localhost:5000
+      - name: Install Vercel CLI
+        if: success()
+        run: npm install --global vercel@canary
+      - name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
