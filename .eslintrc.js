@@ -1,4 +1,5 @@
-module.exports = {
+/* eslint-disable linebreak-style */
+export default {
   "env": {
     "browser": true,
     "es6": true,
@@ -20,17 +21,15 @@ module.exports = {
   ],
   "rules": {
     "indent": [
-      "error",
-        2
-      ],
+      "error", 2 ],
     "linebreak-style": [
       "error",
       "unix"
     ],
-    "quotes": [
-      "error",
-      "single"
-    ],
+    // "quotes": [
+    //   "error",
+    //   "single"
+    // ],
     "semi": [
       "error",
       "never"
