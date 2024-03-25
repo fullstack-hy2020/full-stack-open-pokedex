@@ -2,13 +2,17 @@ name: Hello World!
 
 on:
     push:
-        branches: 
+        branches:
             - main
 
 jobs:
     hello_world_job:
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-22.04
         steps:
-          - name: say hello
-            run: |
-                echo "hello World this is my first github action"
+            - name: say hello
+              run: |
+                  echo "hello World this is my first github action"
+            - name: say date
+              run: |
+                  echo date
+                  echo ls -l
