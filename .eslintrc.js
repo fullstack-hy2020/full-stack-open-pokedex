@@ -24,7 +24,7 @@ module.exports = {
     "indent": [
       "error", 2 ],
     "linebreak-style": [
-      "error",
+      "off",
       "unix"
     ],
     // "quotes": [
@@ -36,7 +36,7 @@ module.exports = {
     //   "never"
     // ],
     "eqeqeq": "error",
-    "no-trailing-spaces": "error",
+    "no-trailing-spaces": "off",
     "object-curly-spacing": [
       "error", "always"
     ],
