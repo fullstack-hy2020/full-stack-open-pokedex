@@ -35,11 +35,14 @@ jobs:
           start: npm run start-prod
           wait-on: http://localhost:5000
       - name: Install Vercel CLI
-        if: success()
+        if: success() && ${{ github.event_name == 'push' }}
         run: npm install --global vercel@canary
       - name: Pull Vercel Environment Information
+        if: success() && ${{ github.event_name == 'push' }}
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
       - name: Build Project Artifacts
+        if: success() && ${{ github.event_name == 'push' }}
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy Project Artifacts to Vercel
+        if: success() && ${{ github.event_name == 'push' }}
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
