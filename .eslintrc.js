@@ -31,10 +31,10 @@ module.exports = {
     //   "error",
     //   "single"
     // ],
-    "semi": [
-      "error",
-      "never"
-    ],
+    // "semi": [
+    //   "error",
+    //   "never"
+    // ],
     "eqeqeq": "error",
     "no-trailing-spaces": "error",
     "object-curly-spacing": [
@@ -43,7 +43,7 @@ module.exports = {
     "arrow-spacing": [
       "error", { "before": true, "after": true }
     ],
-    "no-console": "error",
+    "no-console": "allow",
     "react/prop-types": 0
   }
 }
