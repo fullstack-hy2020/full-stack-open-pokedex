@@ -13,6 +13,6 @@ jobs:
               run: |
                   echo "hello World this is my first github action"
             - name: say date
-              run: |
-                  echo date
-                  echo ls -l
+              run: date
+            - name: list
+              run: echo ls -l
