@@ -28,3 +28,14 @@ jobs:
         run: npx playwright install
       - name: Run Playwright tests
         run: npm run test:e2e
+
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-20.04
+    steps:
+      if: ${{ github.event_name == 'push' }}
+        - name: Bump version and push tag
+        - uses: anothrNick/github-tag-action@1.64.0
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            DEFAULT_BUMP: patch
