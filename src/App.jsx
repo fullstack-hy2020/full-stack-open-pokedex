@@ -12,7 +12,7 @@ const mapResults = (({ results }) => results.map(({ url, name }) => ({
   id: parseInt(url.match(/\/(\d+)\//)[1])
 })))
 
-const App = () => {
+const PokemonRoutes = () => {
   const match = useMatch('/pokemon/:name')
   const { data: pokemonList, error, isLoading } = useApi('https://pokeapi.co/api/v2/pokemon/?limit=50', mapResults)
 
@@ -39,6 +39,14 @@ const App = () => {
         <PokemonPage pokemonList={pokemonList} previous={previous} next={next} />
       } />
     </Routes>
+  )
+}
+
+const App = () => {
+  return (
+    <Router>
+      <PokemonRoutes />
+    </Router>
   )
 }
 
