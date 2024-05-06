@@ -1,0 +1,27 @@
+name: Hello World!
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  hello_world_job:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Say hello
+        run: |
+          echo "Hello World!"
+      
+      - name: Print current date
+        run: |
+          date
+      
+      - name: List directory contents in long format
+        run: |
+          ls -l
+      - name: Trigger deployment
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
