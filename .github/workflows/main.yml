@@ -1,0 +1,16 @@
+name: Hello World!
+
+on: [push]
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+      - name: npm install
+        run: npm install
+      - name: lint
+        run: npm run eslint
