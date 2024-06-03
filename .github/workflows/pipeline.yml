@@ -30,6 +30,7 @@ jobs:
           command: npm run test:e2e
           start: npm run start-prod
           wait-on: http://localhost:5000
+      if: ${{ github.event_name == 'push' }}
       - name: Render Deployment
         uses: sws2apps/render-deployment@v1.6.0
         with:
