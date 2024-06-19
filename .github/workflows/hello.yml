@@ -1,0 +1,19 @@
+name: Hello World
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Run a one-line script
+      run: echo "¡Hola mundo!"
+      
+    - name: Print the date
+      run: date
+
+    - name: List directory contents
+      run: ls -l

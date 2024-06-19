@@ -1,0 +1,115 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Use Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run lint
+      run: npm run lint
+
+  build_and_test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Use Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run build
+      run: npm run build
+
+    - name: Run tests
+      run: npm test
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Use Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Start server
+      run: npm start &
+      env:
+        CI: true
+
+    - name: Run e2e tests
+      uses: cypress-io/github-action@v5
+      with:
+        command: npm run test:e2e
+        start: npm run start-prod
+        wait-on: http://localhost:5000
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: e2e
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(join(github.event.commits.*.message, ' '), '#skip')
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build the application
+      run: npm run build
+
+    - name: Deploy to Fly.io
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      run: |
+        curl -L https://fly.io/install.sh | sh
+        flyctl auth token $FLY_API_TOKEN
+        flyctl deploy --remote-only
+
+    - name: Notify deployment status
+      if: always()
+      run: echo "Deployment status: ${{ job.status }}"
+
+  tag_release:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(join(github.event.commits.*.message, ' '), '#skip')
+    steps:
+    - name: Bump version and push tag
+      uses: anothrNick/github-tag-action@1.164.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DEFAULT_BUMP: patch
+        DRY_RUN: false
