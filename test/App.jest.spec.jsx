@@ -25,11 +25,12 @@ describe('<App />', () => {
   })
 
   it('shows error', async () => {
-    axiosMock.get.mockRejectedValueOnce(new Error())
+    axiosMock.get.mockRejectedValueOnce({ message: 'Error fetching data' })
     await act(async () => {
       render(<Router><App/></Router>)
     })
     expect(screen.getByTestId('error')).toBeVisible()
   })
+
 
 })

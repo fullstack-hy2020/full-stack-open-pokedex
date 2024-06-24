@@ -1,0 +1,17 @@
+name: Periodic Health Check
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Runs every day at midnight
+
+jobs:
+  health_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Server Health
+        uses: jtalk/url-health-check-action@v4
+        with:
+          url: 'https://full-stack-open-pokedex-eli-winter-bush-6872.fly.dev/'
+          expected_status_code: 200
+          timeout_seconds: 10
+          check_every_seconds: 86400  # 24 hours in seconds

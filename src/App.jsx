@@ -1,20 +1,32 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route, useMatch } from 'react-router-dom'
-import { useApi } from './useApi'
+import React, { useEffect, useState } from 'react'
+import { Routes, Route, useMatch } from 'react-router-dom'
 import LoadingSpinner from './LoadingSpinner'
 import ErrorMessage from './ErrorMessage'
 import PokemonPage from './PokemonPage'
 import PokemonList from './PokemonList'
+import { useApi } from './useApi'
 
-const mapResults = (({ results }) => results.map(({ url, name }) => ({
-  url,
-  name,
-  id: parseInt(url.match(/\/(\d+)\//)[1])
-})))
+const mapResults = ({ results }) =>
+  results.map(({ url, name }) => ({
+    url,
+    name,
+    id: parseInt(url.match(/\/(\d+)\//)[1])
+  }))
 
 const App = () => {
   const match = useMatch('/pokemon/:name')
-  const { data: pokemonList, error, isLoading } = useApi('https://pokeapi.co/api/v2/pokemon/?limit=50', mapResults)
+  const { data: pokemonList, error, isLoading } = useApi(
+    'https://pokeapi.co/api/v2/pokemon/?limit=50',
+    mapResults
+  )
+
+  const [healthStatus, setHealthStatus] = useState('')
+
+
+  useEffect(() => {
+    setHealthStatus('ok')
+  }, [])
+
 
   if (isLoading) {
     return <LoadingSpinner />
@@ -35,9 +47,8 @@ const App = () => {
   return (
     <Routes>
       <Route exact path="/" element={<PokemonList pokemonList={pokemonList} />} />
-      <Route exact path="/pokemon/:name" element={
-        <PokemonPage pokemonList={pokemonList} previous={previous} next={next} />
-      } />
+      <Route exact path="/pokemon/:name" element={<PokemonPage pokemonList={pokemonList} previous={previous} next={next} />} />
+      <Route exact path="/health" element={<div>{healthStatus === 'ok' ? 'ok' : 'not ok'}</div>} /> {/* Render 'ok' or 'not ok' based on the health status */}
     </Routes>
   )
 }
