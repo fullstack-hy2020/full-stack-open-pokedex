@@ -119,7 +119,7 @@ describe("<PokemonPage />", () => {
     );
     expect(screen.getByText("Next")).toHaveAttribute(
       "href",
-      "/pokemon/vaporeon"
+      "/pokemon/ditto"
     );
   });
 
