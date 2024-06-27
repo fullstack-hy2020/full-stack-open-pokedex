@@ -10,4 +10,10 @@ describe("Pokedex", () => {
       )
     ).toBeVisible();
   });
+
+  test("navigation works", async ({ page }) => {
+    await page.goto("/");
+    await page.getByText("ivysaur").click();
+    await expect(page.getByText("Hp")).toBeVisible();
+  });
 });
