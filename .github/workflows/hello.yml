@@ -16,9 +16,7 @@ jobs:
   date_time_job:
     runs-on: ubuntu-20.04
     steps:
-      - name: Date
+      - name: Print Date and Time
         run: |
           date
-      -name: Time
-        - run: |
-            ls
+          time
