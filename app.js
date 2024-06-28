@@ -11,5 +11,9 @@ app.listen(PORT, () => {
 });
 
 app.get("/version", (req, res) => {
-  res.send("1")
+  res.send("1");
+});
+
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "dist", "index.html"))
 })
