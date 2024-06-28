@@ -4,6 +4,7 @@ const app = express();
 // get the port from env variable
 const PORT = process.env.PORT || 5000;
 
+// Use dist folder
 app.use(express.static("dist"));
 
 app.get("/version", (req, res) => {
