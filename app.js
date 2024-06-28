@@ -16,5 +16,7 @@ app.get("/version", (req, res) => {
 });
 
 app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "dist", "index.html"))
-})
+  const indexPath = path.join(__dirname, "../dist", "index.html");
+  console.log(`Serving index.html from ${indexPath}`);
+  res.sendFile(indexPath);
+});
