@@ -17,4 +17,4 @@ jobs:
           echo $(date)
       - name: Directory Content
         run: |
-          echo $(ls)
+          echo $(ls -l)
