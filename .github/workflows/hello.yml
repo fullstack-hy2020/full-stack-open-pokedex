@@ -15,3 +15,6 @@ jobs:
       - name: Now it is
         run: |
           echo $(date)
+      - name: Directory Content
+        run: |
+          echo $(ls)
