@@ -3,4 +3,4 @@
 echo "Build script"
 
 npm install
-npm run start-prod
+npm run build
