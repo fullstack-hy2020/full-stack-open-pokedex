@@ -13,7 +13,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install dependencies 
+      - name: npm install 
         run: npm install  
-      - name: Check style
+      - name: Lint
         run: npm run eslint
+      - name: Build
+        run: npm run build
+      - name: Test
+        run: npm run test
