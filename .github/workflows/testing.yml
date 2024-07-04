@@ -14,7 +14,7 @@ jobs:
         id: vars
         env:
           SKIPFOUND: ${{ contains( join(github.event.commits.*.message, ' '), '#skip' ) }}
-        run: echo "SKIP=SKIPFOUND" >> "$GITHUB_ENV"
+        run: echo "SKIP=$SKIPFOUND" >> "$GITHUB_ENV"
       - name: github context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
