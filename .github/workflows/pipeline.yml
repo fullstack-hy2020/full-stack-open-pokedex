@@ -36,7 +36,7 @@ jobs:
       - name: Run Playwright tests
         run: npm run test:e2e
       - name: Trigger deployment
-        if: ${{ github.event_name == 'push' }} && ${{steps.testskip.outputs.SKIP}}
+        if: ${{ github.event_name == 'push' && needs.simple_deployment_pipeline.outputs.SKIP }}
         run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -52,7 +52,7 @@ jobs:
         with:
           fetch-depth: '0'
       - name: Bump version and push tag
-        if: ${{ github.event_name == 'push' }} && ${{needs.simple_deployment_pipeline.outputs.SKIP}}
+        if: ${{ github.event_name == 'push' && needs.simple_deployment_pipeline.outputs.SKIP }}
         uses: anothrNick/github-tag-action@1.67.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
