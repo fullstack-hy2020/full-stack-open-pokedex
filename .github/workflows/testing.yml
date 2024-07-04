@@ -8,13 +8,15 @@ on:
 jobs:
   a_test_job:
     runs-on: ubuntu-20.04
+    outputs:
+      SKIP: ${{ steps.testskip.outputs.SKIP }}
     steps:
       - uses: actions/checkout@v4
-      - name: join commit messages and search skip, set as env variable
-        id: vars
+      - name: join commit messages and search skip, set to output
+        id: testskip
         env:
           SKIPFOUND: ${{ contains( join(github.event.commits.*.message, ' '), '#skip' ) }}
-        run: echo "SKIP=$SKIPFOUND" >> "$GITHUB_ENV"
+        run: echo "SKIP=$SKIPFOUND" >> "$GITHUB_OUTPUT"
       - name: github context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
@@ -27,5 +29,10 @@ jobs:
         env:
           COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
         run: echo "$COMMIT_MESSAGES"
-      - name: test using skip env variable
-        run: echo "$SKIP"
+      - name: test using skip from previous step
+        run: echo ${{steps.testskip.outputs.SKIP}}
+  another_test_job:
+    runs-on: ubuntu-20.04
+    needs: a_test_job
+    steps:
+      - run: echo ${{needs.a_test_job.outputs.SKIP}}
