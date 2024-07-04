@@ -34,8 +34,8 @@ jobs:
       - name: test syntax
         run: |
           echo ${{steps.testskip.outputs.SKIP}}
-          echo ${{!steps.testskip.outputs.SKIP}}
-          echo ${{steps.testskip.outputs.SKIP && !steps.testskip.outputs.SKIP}}
+          echo !${{steps.testskip.outputs.SKIP}}
+          echo ${{steps.testskip.outputs.SKIP}} && !${{steps.testskip.outputs.SKIP}}
   another_test_job:
     runs-on: ubuntu-20.04
     needs: a_test_job
