@@ -10,6 +10,11 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
+      - name: join commit messages and search skip, set as env variable
+        id: vars
+        env:
+          SKIPFOUND: ${{ contains( join(github.event.commits.*.message, ' '), '#skip' ) }}
+        run: echo "SKIP=SKIPFOUND" >> "$GITHUB_ENV"
       - name: github context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
@@ -22,7 +27,5 @@ jobs:
         env:
           COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
         run: echo "$COMMIT_MESSAGES"
-      - name: test join commit messages and search skip
-        env:
-          SKIP: ${{ contains( join(github.event.commits.*.message, ' '), '#skip' ) }}
+      - name: test using skip env variable
         run: echo "$SKIP"
