@@ -63,7 +63,7 @@ jobs:
         with:
             severity: error
             text: Build failed
-            description: pull request ${{ github.event.pull_request.links.self }} by ${{ github.event.pull_request.user.login }} broke the build :(
+            description: pull request ${{ github.event.pull_request.links.self.href }} by ${{ github.event.pull_request.user.login }} broke the build :(
             webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
