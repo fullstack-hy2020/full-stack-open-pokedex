@@ -51,11 +51,19 @@ jobs:
             webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
       - name: Message if deployment failed
         uses: rjstone/discord-webhook-notify@89b0bf43c2c8514f70d0dcba4a706b904e8a3112
-        if: ${{ failure() }}
+        if: ${{ failure() &&  github.event_name == 'push' }}
         with:
             severity: error
             text: Build failed
             description: commit ${{ github.event.head_commit.url }} by ${{ github.event.head_commit.author.name }} broke the build :(
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Message if pull request fails to build
+        uses: rjstone/discord-webhook-notify@89b0bf43c2c8514f70d0dcba4a706b904e8a3112
+        if: ${{ failure() &&  github.event_name == 'pull_request' }}
+        with:
+            severity: error
+            text: Build failed
+            description: pull request ${{ github.event.pull_request.links.self }} by ${{ github.event.user.login }} broke the build :(
             webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
