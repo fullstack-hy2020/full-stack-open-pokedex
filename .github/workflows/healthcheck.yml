@@ -1,0 +1,31 @@
+name: Health check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  health_check:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Check the deployed service URL
+      uses: jtalk/url-health-check-action@b716ccb6645355dd9fcce8002ce460e5474f7f00
+      with:
+        # Check the following URLs one by one sequentially
+        url: https://full-stack-open-pokedex-p649.onrender.com/health
+        # Fail this action after this many failed attempts
+        max-attempts: 1 # Optional, defaults to 1
+        # Delay between retries
+        retry-delay: 5s # Optional, only applicable to max-attempts > 1
+        # Retry all errors, including 404. This option might trigger curl upgrade.
+        retry-all: false # Optional, defaults to "false"
+        # String representation of cookie attached to health check request.
+        # Format: `Name=Value`
+        cookie: "" # Optional, default is empty
+        # Basic auth login password pair.
+        # Format: `login:password`
+        basic-auth: "" # Optional, default is empty
