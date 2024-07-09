@@ -20,13 +20,14 @@ jobs:
         run: npm install
       - name: Check style with lint
         run: npm run eslint
-      - name: production build
-        run: npm run build
       - name: run tests
         run: npm run test
+      - name: production build
+        run: npm run build
       - name: Acquire browser for playwright
         run: npx playwright install 
       - name: Run Playwright tests
         run: npm run test:e2e
-      - name: Trigger deployment to render
-        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+      if: ${{ github.event_name == 'push' }}
+        - name: Trigger deployment to render
+          run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
