@@ -1,0 +1,21 @@
+Continuous Integration (CI) is a set of processes that assists in ensuring the
+application remains stable and functional throughout the development process.
+Some of the processes include Linting, Testing, Building.
+In python, some tools to assist in these steps are:
+Pylint - analyzes the code for syntax errors, coding style violations... (Linting)
+Pytest - provides a way to write and run tests for the code such as unit tests. (Testing)
+Setuptools - Tool used for creating distributable packages eg: pip packages (Building)
+Pyinstaller - Tool that can bundle the application into an executables (Building)
+
+There are many hosting tools to set up the CI such as Jenkins, GitHub Actions, AzureDevOps, GitLabCI...
+
+In order to choose which hosting service to use for the CI, one need to consider many factors
+A cloud based environment such as GitHubActions offers ease of setup, scalability and reduced
+maintenance which is ideal for small-medium teams.
+while a self-hosted service provides a greater control over the build environment which can make
+setting it up harder, but in a larger-scale team it can come in handy not to mention that it can
+be more cost efficient in this case.
+
+In this example given, a cloud based environment looks advisable.
+Their project should be released soon so the ease in setting up the cloud environment will be
+quite helpful not to mention that the team is of small size so the scalability and cost efficiency should be better in this enviroment
