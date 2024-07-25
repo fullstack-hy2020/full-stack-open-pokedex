@@ -1,0 +1,14 @@
+name: first_pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  hello_world_job:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: say_hello
+        run: |
+          echo "hello world"
