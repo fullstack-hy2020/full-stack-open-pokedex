@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: commit messages
+      - name: Commit messages
         env:
           COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
         run: echo "$COMMIT_MESSAGES"
@@ -61,7 +61,7 @@ jobs:
   tag_release:
     needs: [simple_deployment_pipeline]
     runs-on: ubuntu-20.04
-    if: ${{ github.event_name == 'push' && !contains(join(needs.simple_deployment_pipeline.outputs.COMMIT_MESSAGES), '#skip') }}
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message), '#skip') }}
     steps:
       - uses: actions/checkout@v4
       - name: Bump version and push tag
