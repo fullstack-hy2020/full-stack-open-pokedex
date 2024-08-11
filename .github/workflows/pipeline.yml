@@ -63,13 +63,21 @@ jobs:
         if: ${{ success() && github.event_name == 'push' }}
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          content: "Success"
+          embed-color: 65280
           embed-title: "Pokedex deploy success"
+          embed-footer-text: "severity: info"
+          
       - name: Deploy Failure
         uses: tsickert/discord-webhook@v6.0.0
         if: ${{ failure() }}
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          content: "Failure"
+          embed-color: 16711680
           embed-title: "Build failed"
+          embed-description: "commit broke the build: https://github.com/Ethervortex/commit/${{ github.sha }}"
+          embed-footer-text: "severity: error"
 
   tag_release:
     needs: [simple_deployment_pipeline]
