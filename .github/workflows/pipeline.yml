@@ -59,15 +59,17 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
       - name: Deploy success
-        uses: johnnyhuy/actions-discord-git-webhook@main 
+        uses: tsickert/discord-webhook@v6.0.0
         if: ${{ success() && github.event_name == 'push' }}
         with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          embed-title: "Pokedex deploy success"
       - name: Deploy Failure
-        uses: johnnyhuy/actions-discord-git-webhook@main 
+        uses: tsickert/discord-webhook@v6.0.0
         if: ${{ failure() }}
         with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          embed-title: "Build failed"
 
   tag_release:
     needs: [simple_deployment_pipeline]
