@@ -62,12 +62,12 @@ jobs:
         uses: johnnyhuy/actions-discord-git-webhook@main 
         if: ${{ success() && github.event_name == 'push' }}
         with:
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
       - name: Deploy Failure
         uses: johnnyhuy/actions-discord-git-webhook@main 
         if: ${{ failure() }}
         with:
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
 
   tag_release:
     needs: [simple_deployment_pipeline]
