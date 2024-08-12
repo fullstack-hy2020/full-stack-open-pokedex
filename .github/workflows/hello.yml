@@ -1,0 +1,98 @@
+name: CI Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Lint code
+      run: npm run eslint -- --fix
+
+    - name: Build project
+      run: npm run build
+
+    - name: Run tests
+      run: npm test
+
+    - name: e2e tests
+      uses: cypress-io/github-action@v5
+      with:
+        command: npm run test:e2e
+        start: npm run start-prod
+        wait-on: http://localhost:8080/
+
+    - name: Check commit messages
+      id: check_commit_message
+      run: |
+        echo "Checking commit messages for #skip..."
+        SKIP=false
+        for commit_message in $(git log --format=%B --no-merges ${{ github.sha }}~1..${{ github.sha }}); do
+          if [[ "$commit_message" == *"#skip"* ]]; then
+            SKIP=true
+            break
+           fi
+        done
+        echo "::set-output name=skip::$SKIP"
+  
+    - name: Render Deployment
+      if: github.ref == 'refs/heads/main' && steps.check_commit_message.outputs.skip != 'true'
+      uses: sws2apps/render-deployment@v1.7.0
+      with:
+        apiKey: ${{ secrets.FULLSTACK24 }}  
+        serviceId: ${{ secrets.SERVICE_ID_RENDER }}
+      
+    - name: Bump version and push tag
+      if: github.ref == 'refs/heads/main' && steps.check_commit_message.outputs.skip != 'true'
+      uses: anothrNick/github-tag-action@1.64.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+
+    - name: Notify Discord on success
+      if: github.ref == 'refs/heads/main' && steps.check_commit_message.outputs.skip != 'true'
+      uses: rjstone/discord-webhook-notify@v1.0.4
+      with:
+        webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        message: "✅ New version deployed successfully!"
+
+    - name: Notify Discord on failure
+      if: failure()
+      uses: rjstone/discord-webhook-notify@v1.0.4
+      with:
+        webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        message: |
+          ❌ Build failed!
+          Commit: ${{ github.event.head_commit.message }}
+          Author: ${{ github.event.head_commit.author.name }}
+          URL: ${{ github.event.head_commit.url }}
+
+  health_check:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Check the deployed service URL
+      uses: jtalk/url-health-check-action@v4
+      with:
+        url: https://full-stack-open-pokedex-02pf.onrender.com
+        follow-redirect: false
+        max-attempts: 3
+        retry-delay: 5s
+        retry-all: false
+      
