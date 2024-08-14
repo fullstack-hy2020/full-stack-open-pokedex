@@ -1,0 +1,73 @@
+name: Deployment pipeline
+
+env:
+  CONDITION: ${{ github.event_name == 'push' && !contains(toJson(github.event.commits.*.message), '#skip') }}
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies 
+        run: npm install  
+      
+      - name: Check style
+        run: npm run eslint
+      
+      - name: Build app
+        run: npm run build
+      
+      - name: Test
+        run: npm run test
+      
+      - name: e2e tests
+        uses: cypress-io/github-action@v6
+        with:
+          command: npm run test:e2e
+          start: npm run start-prod
+          wait-on: http://localhost:5001
+      
+      - name: Trigger deployment on render
+        if: ${{ env.CONDITION == 'true' }}
+        run: curl https://api.render.com/deploy/${{ secrets.SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+
+      - name: Notify on Success
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d '{"content": "Test Succeeded!"}' \
+               ${{ secrets.DISCORD_WEBHOOK }}
+      
+      - name: Build fail
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d '{"content": "Commit ${{ github.sha }} from repo ${{ github.repository }} failed."}' \
+               ${{ secrets.DISCORD_WEBHOOK }}
+
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump version and push tag
+        if: ${{ env.CONDITION == 'true' }}
+        uses: anothrNick/github-tag-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false
+          DEFAULT_BUMP: patch
