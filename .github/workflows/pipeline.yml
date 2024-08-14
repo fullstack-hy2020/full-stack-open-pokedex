@@ -76,7 +76,7 @@ jobs:
           content: "Failure"
           embed-color: 16711680
           embed-title: "Build failed"
-          embed-description: "commit broke the build: https://github.com/Ethervortex/commit/${{ github.sha }}"
+          embed-description: "commit: ${{ github.sha }} broke the build"
           embed-footer-text: "severity: error"
 
   tag_release:
