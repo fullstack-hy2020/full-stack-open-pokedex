@@ -1,0 +1,93 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Commit messages
+        env:
+          COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
+        run: echo "$COMMIT_MESSAGES"
+
+      - name: Install dependencies 
+        run: npm install  
+
+      - name: lint
+        run: npm run eslint
+
+      - name: Build
+        run: npm run build
+
+      - name: Run jest
+        run: npm test
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run E2E Tests
+        run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Set up Fly.io
+        uses: superfly/flyctl-actions/setup-flyctl@master
+  
+      - name: Deploy to Fly.io
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message), '#skip') }}
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Deploy success
+        uses: tsickert/discord-webhook@v6.0.0
+        if: ${{ success() && github.event_name == 'push' }}
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          content: "Success"
+          embed-color: 65280
+          embed-title: "Pokedex deploy success"
+          embed-footer-text: "severity: info"
+          
+      - name: Deploy Failure
+        uses: tsickert/discord-webhook@v6.0.0
+        if: ${{ failure() }}
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          content: "Failure"
+          embed-color: 16711680
+          embed-title: "Build failed"
+          embed-description: "commit: ${{ github.sha }} broke the build"
+          embed-footer-text: "severity: error"
+
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-20.04
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message), '#skip') }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.70.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+          WITH_V: true
