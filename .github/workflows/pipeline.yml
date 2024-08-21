@@ -58,7 +58,7 @@ jobs:
     steps:
       - name: Deploy Success
         uses: rjstone/discord-webhook-notify@v1.0.4
-        if: ${{ success() }}
+        if: success()
         with:
           severity: info
           text: A new version of Pokedex deployed
@@ -67,7 +67,7 @@ jobs:
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
       - name: Deploy Failure
         uses: rjstone/discord-webhook-notify@v1.0.4
-        if: ${{ failure() }}
+        if: failure()
         with:
           severity: error
           text: Build failed
