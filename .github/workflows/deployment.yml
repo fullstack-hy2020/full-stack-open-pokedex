@@ -19,9 +19,10 @@ jobs: # Start listing jobs
      - name: Install dependencies # Define new step
        run: npm install # Task to do in step above
      - name: Check style # Define new step
+       if: ${{ github.event_name == 'push' }} # Run only if the event is a push
        run: npm run eslint # Task to do in step above
      - name: Deploy # Define the deployment step
-       # if: ${{ github.event_name == 'push' }} # Run only if the event is a push
+       if: ${{ github.event_name == 'push' }} # Run only if the event is a push
        run: | # Task to do in step above
           echo "Deploying to production"
         # Your deployment script or command here
