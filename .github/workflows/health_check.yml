@@ -1,0 +1,15 @@
+# name: Health Check
+
+# on:
+#   schedule:
+#     - cron: '0 12 */1 * *'
+
+# jobs:
+#   health_check:
+#     name: health_check
+#     runs-on: ubuntu-20.04
+#     steps:
+#       - name:
+#         uses: jtalk/url-health-check-action@b716ccb6645355dd9fcce8002ce460e5474f7f00
+#         with:
+#           url: https://full-stack-open-pokedex-ixmj.onrender.com/health

@@ -1,0 +1,69 @@
+name: Deployment pipeline
+
+env:
+  SKIP_CONDITION: ${{ contains(join(github.event.commits.*.message, ', '), '#skip') }}
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  simple_deployment_pipeline:
+    name: simple_deployment_pipeline
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Check style
+        run: npm run eslint
+      - name: build
+        run: npm run build
+      - name: test
+        run: npm run test
+      - name: install playwright browsers
+        run: npx playwright install --with-deps
+      - name: e2e tests
+        run: npm run test:e2e
+      - name: Trigger deployment
+        if: ${{ github.event_name == 'push' }}
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+
+      - name: Success
+        uses: Ilshidur/action-discord@e3927b5d7bb18e3ad2b1e334226af57c6391aaeb
+        if: ${{ success() }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_USERNAME: "GitHub Bot Part 11"
+          DISCORD_AVATAR: "https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
+        with:
+          args: "A new version of Pokedex deployed to https://pdex.fly.dev by {{ EVENT_PAYLOAD.repository.owner.name }}"
+
+      - name: Error
+        uses: Ilshidur/action-discord@e3927b5d7bb18e3ad2b1e334226af57c6391aaeb
+        if: ${{ failure() }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_USERNAME: "GitHub Bot Part 11"
+          DISCORD_AVATAR: "https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
+        with:
+          args: "commit {{ EVENT_PAYLOAD.commits.0.url }} by {{ EVENT_PAYLOAD.repository.owner.name }} broke the build :( "
+
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@v1
+        if: ${{ github.event_name == 'push' && env.SKIP_CONDITION == 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
