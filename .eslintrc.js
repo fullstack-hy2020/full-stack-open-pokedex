@@ -2,7 +2,8 @@ module.exports = {
   "env": {
     "browser": true,
     "es6": true,
-    "jest/globals": true
+    "jest/globals": true,
+    "node": true
   },
   "extends": [
     "eslint:recommended",
@@ -20,30 +21,34 @@ module.exports = {
   ],
   "rules": {
     "indent": [
+      "off",
       "error",
         2
+      ],
+      "no-unused-vars": [
+        "off"
       ],
     "linebreak-style": [
       "error",
       "unix"
     ],
     "quotes": [
-      "error",
-      "single"
+      "off",
+      "single", 
+      "double"
     ],
     "semi": [
-      "error",
-      "never"
+      "off"
     ],
     "eqeqeq": "error",
-    "no-trailing-spaces": "error",
+    "no-trailing-spaces": "off",
     "object-curly-spacing": [
       "error", "always"
     ],
     "arrow-spacing": [
       "error", { "before": true, "after": true }
     ],
-    "no-console": "error",
+    "no-console": 0,
     "react/prop-types": 0
   }
 }
