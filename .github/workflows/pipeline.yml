@@ -1,0 +1,71 @@
+name: Deployment pipeline
+env:
+  COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
+  SKIP_CONDITION: ${{ !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Debug SKIP_CONDITION
+        run: echo "SKIP_CONDITION ${{ env.SKIP_CONDITION }}"
+
+  test:
+    needs: [build]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Debug SKIP_CONDITION
+        run: echo "SKIP_CONDITION ${{ env.SKIP_CONDITION }}"
+  tag_release:
+    needs: [build]
+    if: ${{ github.event_name == 'push'}}
+
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Bump version and push tag
+        if: ${{env.SKIP_CONDITION == 'true'}}
+        uses: anothrNick/github-tag-action@1.70.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+      - name: Test Success
+        uses: sarisia/actions-status-discord@v1
+        if: success()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+
+  deploy:
+    needs: [build]
+    if: ${{ github.event_name == 'push'}}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trigger deployment
+        if: ${{env.SKIP_CONDITION == 'true'}}
+        run: curl ${{ secrets.RENDER_DEPLOY_URL }}
+      - name: Test Success
+        uses: sarisia/actions-status-discord@v1
+        if: success()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Test Failure
+        
+        uses: sarisia/actions-status-discord@v1
+        if: failure()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}

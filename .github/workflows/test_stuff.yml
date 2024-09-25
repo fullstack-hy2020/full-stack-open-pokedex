@@ -1,0 +1,31 @@
+name: Testing stuff
+env:
+  SKIP_CONDITION: ${{ contains(join(github.env.COMMIT_MESSAGES, ' '), '#skip') }}
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+jobs:
+  a_test_job:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: github context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: commits
+        env:
+          COMMITS: ${{ toJson(github.event.commits) }}
+        run: echo "$COMMITS"
+      - name: commit messages
+        env:
+          COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
+#gg
+        run: echo "$COMMIT_MESSAGES"
+
+      - name: skipped
+        run: echo ${{ env.SKIP_CONDITION }}
