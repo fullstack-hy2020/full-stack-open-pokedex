@@ -1,0 +1,24 @@
+name: Deployment Pipeline
+
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-20.04
+    steps: 
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.12.1'
+      - name: Install dependencies
+        run: npm install
+      - name: Check Style
+        run: npm run eslint
+      - name: Build
+        run: npm run build --verbose
+      - name: e2e tests
+        run: npm run test:e2e

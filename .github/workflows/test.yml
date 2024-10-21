@@ -1,0 +1,19 @@
+name: Testing stuff
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test_commit_skip:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Useless name 
+        uses: actions/checkout@v4
+
+      - name: Check if skip tag-bump
+        if: ${{ !contains(toJson(github.event.commits.*.message), '#skip') }}
+        env:
+          COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
+        run: echo "$COMMIT_MESSAGES"
