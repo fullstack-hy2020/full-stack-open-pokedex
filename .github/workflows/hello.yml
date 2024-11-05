@@ -1,0 +1,28 @@
+name: Hello World Workflow
+
+# Trigger the workflow when pushing to the main branch
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+# Define the job
+jobs:
+  hello_world_job:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Print "Hello World!"
+      - name: Say Hello World
+        run: echo "Hello World!"
+      
+      # Print the current date
+      - name: Print Current Date
+        run: date
+      
+      # Print the current file directory
+      - name: Print File Directory Content
+        run: ls -l

@@ -1,0 +1,39 @@
+# fly.toml app configuration file generated for full-stack-open-pokedex-nameless-snowflake-138 on 2024-09-23T20:06:02Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'full-stack-open-pokedex-nameless-snowflake-138'
+primary_region = 'ams'
+
+[build]
+
+[env]
+  PORT = "3000"
+
+[processes]
+  app = "node app.js" # add this
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[http_service.checks]]
+  grace_period = "10s"
+  interval = "30s"
+  method = "GET"
+  timeout = "5s"
+  path = "/health"
+
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+
+[deploy]
+  strategy = "canary"
