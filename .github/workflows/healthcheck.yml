@@ -1,0 +1,41 @@
+name: Healthcheck
+
+#on:
+#  schedule:
+#   - cron: '0 */4 * * *'
+
+jobs:
+  healthcheck:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check the deployed service URL
+      uses: jtalk/url-health-check-action@v4
+      with:
+        # Check the following URLs one by one sequentially
+        url: https://full-stack-open-pokedex-9m1h.onrender.com/health
+        # Follow redirects, or just report success on 3xx status codes
+        follow-redirect: false # Optional, defaults to "false"
+        # Fail this action after this many failed attempts
+        max-attempts: 3 # Optional, defaults to 1
+        # Delay between retries
+        retry-delay: 5s # Optional, only applicable to max-attempts > 1
+        # Retry all errors, including 404. This option might trigger curl upgrade.
+        retry-all: false # Optional, defaults to "false"
+    - name: Healthcheck OK
+      uses: stegzilla/discord-notify@v2
+      if: ${{ success() }}
+      with:
+        webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+        title: Healthcheck OK
+        message: "Scheduled healthcheck succeeded to https://full-stack-open-pokedex-9m1h.onrender.com"
+        include_image: false
+        colour: "#00FF00"
+    - name: Healthcheck failed
+      uses: stegzilla/discord-notify@v2
+      if: ${{ failure() }}
+      with:
+        webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+        title: Healthcheck failed
+        message: "Scheduled healthcheck failed to https://full-stack-open-pokedex-9m1h.onrender.com"
+        include_image: false
+        colour: "#FF0000"

@@ -1,0 +1,92 @@
+name: Deployment pipeline
+
+env:
+  CONDITION: ${{ !contains( join(github.event.commits.*.message), '#skip') }}
+  USER: ${{ github.event.pull_request.user.login }}
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm run eslint
+      - run: npm run test
+      - run: npm run build
+
+      - name: The build failed
+        uses: stegzilla/discord-notify@v2
+        if: ${{ failure() }}
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          title: Build failed
+          message:  "Commit in pull request ${{ github.event.pull_request.html_url }} by ${{ env.USER }} broke the build. \n Severity: Error"
+          include_image: false
+          colour: "#FF0000"
+
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Trigger deployment
+        if: ${{ env.CONDITION == 'true' && github.event_name == 'push' }}
+        uses: sws2apps/render-deployment@main #consider using pin for dependabot auto update
+        with:
+          serviceId: ${{ secrets.RENDER_SERVICE_ID }}
+          apiKey: ${{ secrets.RENDER_API_KEY }}
+          multipleDeployment: false #optional, default true
+  
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: '0'
+
+    - name: Bump version and push tag
+      uses: anothrNick/github-tag-action@f278d49d30cdd8775cc3e7dd00b5ee11686ee297
+      if: ${{ env.CONDITION == 'true' && github.event_name == 'push' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DEFAULT_BUMP: patch
+  
+  deployment_succeeded:
+    needs: [tag_release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: The deployment succeeded
+        uses: stegzilla/discord-notify@v2
+        if: ${{ env.CONDITION == 'true' && github.event_name == 'push' && success() }}
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          title: A new version of Pokedex deployed
+          message: "to https://full-stack-open-pokedex-9m1h.onrender.com by ${{ env.USER }} \n Severity: Informational"
+          include_image: false
+          colour: "#00FF00"
