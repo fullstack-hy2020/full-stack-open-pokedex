@@ -1,5 +1,9 @@
 name: Deployment pipeline
 
+env:
+  IS_PUSH_EVENT: ${{ github.event_name == 'push' }}
+  SKIP_DEPLOY_AND_TAG: ${{ contains(github.event.head_commit.message, '#skip') }}
+
 on:
   push:
     branches:
@@ -25,8 +29,10 @@ jobs:
       - name: Run tests
         run: npm run test
       - name: Install Playwright Browsers
+        if: ${{ !env.SKIP_DEPLOY_AND_TAG }}
         run: npx playwright install --with-deps
       - name: Run E2E tests
+        if: ${{ !env.SKIP_DEPLOY_AND_TAG }}
         run: npx playwright test
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -36,14 +42,18 @@ jobs:
           retention-days: 30
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Deploy to Fly
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ env.IS_PUSH_EVENT && !env.SKIP_DEPLOY_AND_TAG }}
         run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: commit messages
+        env:
+          COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
+        run: echo "$COMMIT_MESSAGES"
   tag_release:
     runs-on: ubuntu-20.04
     needs: simple_deployment_pipeline
-    if: ${{ github.event_name == 'push' }}
+    if: ${{ github.env.IS_PUSH_EVENT && !github.env.SKIP_DEPLOY_AND_TAG }}
     steps:
       - uses: actions/checkout@v4
       - name: Bump version and push tag
