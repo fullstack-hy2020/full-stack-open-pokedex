@@ -1,0 +1,46 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  # Deployment pipeline
+  simple_deployment_pipeline:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Check style
+        run: npm run eslint
+      - name: Build
+        run: npm run build
+      - name: Test
+        run: npm test
+
+ 
+  tag_release:
+    needs: [simple_deployment_pipeline]  
+    runs-on: ubuntu-20.04
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }} 
+          fetch-depth: '0'
+        
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.71.0 
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          WITH_V: true
+          PRERELEASE: true
+          DEFAULT_BUMP: patch
