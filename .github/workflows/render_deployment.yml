@@ -1,0 +1,20 @@
+name: Trigger Render Deployment
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+jobs:
+  main:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deployment
+        if: ${{ github.event_name == 'push' }}
+        uses: sws2apps/render-deployment@main #consider using pin for dependabot auto update
+        with:
+          serviceId: ${{ secrets.RENDER_SERVICE_ID }}
+          apiKey: ${{ secrets.RENDER_API_KEY }}
+          multipleDeployment: false #optional, default true
