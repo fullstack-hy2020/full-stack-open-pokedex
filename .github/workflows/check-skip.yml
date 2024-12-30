@@ -1,0 +1,28 @@
+name: Check Skip
+
+on:
+  workflow_call:
+    inputs:
+      pr_title:
+        required: true
+        type: string
+      pr_body:
+        required: true
+        type: string
+
+jobs:
+  check-skip:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{steps.skip-check.outputs.skip}}
+    steps:
+      - name: Check commit message for skip
+        id: skip-check
+        run: |
+          if [["${{inputs.pr_title}}" == *"#skip"* || "${{inputs.pr_body}}" == *"#skip"*]]; 
+          then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+

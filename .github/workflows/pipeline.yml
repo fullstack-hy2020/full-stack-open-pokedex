@@ -1,0 +1,57 @@
+name: Deployment pipeline
+
+on:
+  push:
+   branches:
+    - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  check-skip:
+    uses: ./.github/workflows/check-skip.yml
+    with:
+      pr_title: ${{github.event.pull_request.title}}
+      pr_body: ${{github.event.pull_request.body}}
+
+  simple_deployment_pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run linter
+        run: npm run eslint
+
+      - name: Render Deployment to Production
+        if: ${{github.event_name == 'push' &&  needs.check-skip.outputs.should_skip == 'false'}}
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+
+  bump-version:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-latest
+    permissions: 
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bump version and push tag
+        if: ${{github.event_name == 'push' &&  needs.check-skip.outputs.should_skip == 'false'}}
+        uses: anothrNick/github-tag-action@f278d49d30cdd8775cc3e7dd00b5ee11686ee297
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          DEFAULT_BUMP: patch
