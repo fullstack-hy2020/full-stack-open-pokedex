@@ -1,12 +1,13 @@
+/* eslint-disable no-undef */
 const HtmlWebPackPlugin = require("html-webpack-plugin");
-const path = require('path');
+const path = require("path");
 
 module.exports = {
   entry: "./src/index.jsx",
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js',
-    publicPath: '/'
+    path: path.resolve(__dirname, "dist"),
+    filename: "bundle.js",
+    publicPath: "/",
   },
   module: {
     rules: [
@@ -35,7 +36,7 @@ module.exports = {
             loader: "css-loader",
           },
         ],
-      }
+      },
     ],
   },
   resolve: {

@@ -1,0 +1,88 @@
+# .github/workflows/ci.yml
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3 \
+            libxss1 \
+            libasound2 \
+            libatk-bridge2.0-0 \
+            libatk1.0-0 \
+            libcups2 \
+            libdbus-glib-1-2 \
+            libgdk-pixbuf2.0-0 \
+            libgtk-3-0 \
+            libpango1.0-0 \
+            libx11-xcb1 \
+            libxcomposite1 \
+            libxrandr2 \
+            libxdamage1 \
+            libxext6 \
+            libxi6 \
+            libxtst6 \
+            libxss1 \
+            libgbm1 \
+            libopus0 \
+            libvpx7 \
+            libglib2.0-0 \
+            libgstreamer1.0-0 \
+            libgstreamer-plugins-base1.0-0
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Test
+        run: npm run test
+
+      - name: Discord notification
+        env:  
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@0c4b27844ba47cb1c7bee539c8eead5284ce9fa9
+        with:
+          args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} has been deployed. Please mluukkai check my code!' 
+          
+
+  tag_release:
+    needs: simple_deployment_pipeline
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+        # Agregar #major, #minor o #patch en el commit
+      - name: Bump version and push tag
+        if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
+        uses: anothrNick/github-tag-action@777684df761b882a3f4f70db16ac70d8cc78d0ea
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+
+      - name: Deploy
+        if: ${{ github.event_name == 'push' }}
+        env:
+          deploy_url: ${{ secrets.RENDER_API_KEY }}
+        run: |
+          curl "$deploy_url"

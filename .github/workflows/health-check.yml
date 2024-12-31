@@ -1,0 +1,31 @@
+name: Health Check
+
+on:
+  schedule:
+    - cron: "0 0 * * *" 
+  workflow_dispatch: 
+
+jobs:
+  health_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the deployed service URL
+        uses: jtalk/url-health-check-action@v4
+        with:
+          # I changed the url by mistake and deleted it from render
+          url: https://full-stack-open-pokedex-txnk.onrender.com
+          follow-redirect: false 
+          max-attempts: 3 
+          retry-delay: 5s 
+          retry-all: false 
+          cookie: ""
+          basic-auth: "" 
+
+
+      - name: Discord health notification
+        env:  
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@0c4b27844ba47cb1c7bee539c8eead5284ce9fa9
+        with:
+          args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} is healthy!'
+
