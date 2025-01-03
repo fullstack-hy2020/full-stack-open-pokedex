@@ -1,6 +1,7 @@
-@import url('https://fonts.googleapis.com/css?family=Open+Sans|Open+Sans+Condensed:300,700');
+@import url("https://fonts.googleapis.com/css?family=Open+Sans|Open+Sans+Condensed:300,700");
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
 }
@@ -27,6 +28,7 @@ footer {
   margin: 120px;
   width: 80px;
 }
+
 @keyframes rotation {
   from {
     transform: rotate(0deg);
@@ -36,9 +38,24 @@ footer {
   }
 }
 
+.pokedex-title {
+  font-size: large;
+  text-align: center;
+  color: rgb(174, 18, 235);
+  text-transform: uppercase;
+}
+
+.pokedex-desc {
+  font-size: small;
+  text-align: center;
+  color: #c33;
+}
+
 .list-container {
   display: flex;
   flex-wrap: wrap;
+  margin: 0 4px;
+  border: 0.4px dashed pink;
 }
 
 .list-item {

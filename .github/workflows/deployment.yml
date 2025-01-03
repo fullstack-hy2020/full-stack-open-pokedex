@@ -1,0 +1,136 @@
+name: Deployment pipeline
+
+env:
+  # Check if any commit message includes '#skip'
+  IS_SKIP_COMMIT: ${{ contains(join(github.event.commits.*.message, ' '), '#skip') }}
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  hello_world_job:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Say hello
+        run: |
+          echo "Hello World!"
+      - name: Now it is
+        run: |
+          date
+      - name: Directory content
+        run: |
+          ls -l
+  simple_deployment_pipeline:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm install
+      - name: lint
+        run: npm run eslint
+      - name: build
+        run: npm run build
+      - name: test
+        run: npm run test
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+      - name: Trigger deployment
+        if: ${{ github.event_name == 'push' && env.IS_SKIP_COMMIT == 'false' }}
+        uses: sws2apps/render-deployment@main #consider using pin for dependabot auto update
+        with:
+          serviceId: ${{ secrets.RENDER_SERVICE_ID }}
+          apiKey: ${{ secrets.RENDER_API_KEY }}
+          multipleDeployment: false #optional, default true
+
+      - name: Test Success
+        uses: rjstone/discord-webhook-notify@v1
+        if: success()
+        with:
+          severity: info
+          details: Test Succeeded!
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Test Failure
+        uses: rjstone/discord-webhook-notify@v1
+        if: failure()
+        with:
+          severity: error
+          details: Test Failed!
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Test Cancelled
+        uses: rjstone/discord-webhook-notify@v1
+        if: cancelled()
+        with:
+          severity: warn
+          details: Test Cancelled!
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Bump version and push tag
+        if: ${{ github.event_name == 'push' && env.IS_SKIP_COMMIT == 'false' }}
+        uses: anothrNick/github-tag-action@1.71.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  periodic_health_check:
+    runs-on: ubuntu-20.04
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'push' }}
+    steps:
+      - name: Check the deployed service URL
+        uses: jtalk/url-health-check-action@v4
+        with:
+          url: https://full-stack-open-pokedex-full.onrender.com/|https://full-stack-open-pokedex-full.onrender.com/version|https://full-stack-open-pokedex-full.onrender.com/health
+          follow-redirect: false
+          max-attempts: 3
+          retry-delay: 5s
+          retry-all: false
+      - name: Notify on Health Check Failure
+        if: failure()
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: error
+          details: Health Check Failed! Please investigate the service.
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+    # runs-on: ubuntu-20.04
+    # steps:
+    #   - name: Check the deployed service URL
+    #     uses: jtalk/url-health-check-action@v4
+    #     with:
+    #       # Check the following URLs one by one sequentially
+    #       url: https://full-stack-open-pokedex-full.onrender.com/|https://full-stack-open-pokedex-full.onrender.com/version|https://full-stack-open-pokedex-full.onrender.com/health
+    #       # Follow redirects, or just report success on 3xx status codes
+    #       follow-redirect: false # Optional, defaults to "false"
+    #       # Fail this action after this many failed attempts
+    #       max-attempts: 3 # Optional, defaults to 1
+    #       # Delay between retries
+    #       retry-delay: 5s # Optional, only applicable to max-attempts > 1
+    #       # Retry all errors, including 404. This option might trigger curl upgrade.
+    #       retry-all: false # Optional, defaults to "false"
+    #       # String representation of cookie attached to health check request.
+    #       # Format: `Name=Value`
+    #       cookie: "token=asdf1234" # Optional, default is empty
+    #       # Basic auth login password pair.
+    #       # Format: `login:password`
+    #       basic-auth: "login:password" # Optional, default is empty
