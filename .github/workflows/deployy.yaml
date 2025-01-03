@@ -1,0 +1,60 @@
+name: Deployment Pipeline with Notifications
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Deploy to production
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          echo "Deploying application..."
+          # Add your deployment commands here
+
+  notify:
+    needs: build_and_deploy
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Send Discord success notification
+        if: ${{ success() }}
+        uses: Ilshidur/action-discord@2.0.2
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          message: |
+            :tada: **Deployment Successful!**
+            The latest version has been successfully deployed to production.
+            Commit: `${{ github.sha }}`
+            Branch: `${{ github.ref_name }}`
+
+      - name: Send Discord failure notification
+        if: ${{ failure() }}
+        uses: Ilshidur/action-discord@2.0.2
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          message: |
+            :x: **Deployment Failed!**
+            Something went wrong during the deployment process.
+            Commit: `${{ github.sha }}`
+            Branch: `${{ github.ref_name }}`
+            Please review the logs for more details.

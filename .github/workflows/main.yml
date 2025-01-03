@@ -1,0 +1,48 @@
+name: Deploy Application
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run tests
+      run: npm test
+
+    - name: Deploy to Production
+      run: npm run deploy
+      env:
+        MONGO_URI: ${{ secrets.MONGO_URI }}
+
+    - name: Notify Discord on Success
+      if: success()  # Send notification only if the build succeeds
+      uses: Ilshidur/action-discord-webhook@v2
+      with:
+        webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        username: 'GitHub Actions'
+        content: 'The deployment was successful! 🎉'
+
+    - name: Notify Discord on Failure
+      if: failure()  # Send notification only if the build fails
+      uses: Ilshidur/action-discord-webhook@v2
+      with:
+        webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        username: 'GitHub Actions'
+        content: 'The deployment failed! 🚨 Here is the commit that caused the issue: ${{ github.sha }}'
+
+

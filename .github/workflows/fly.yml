@@ -1,0 +1,60 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+
+jobs:
+  test_and_lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Backend Tests
+      - name: Set up Node.js for backend
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm install
+      - name: Run backend tests
+        run: |
+          cd backend
+          npm test
+
+      # Frontend Tests
+      - name: Set up Node.js for frontend
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm install
+      - name: Run frontend tests
+        run: |
+          cd frontend
+          npm test
+
+  deploy:
+    needs: [test_and_lint]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Deploy Backend
+      - name: Deploy Backend
+        run: |
+          echo "Deploying backend..."
+          # Add backend deployment script here
+
+      # Deploy Frontend
+      - name: Deploy Frontend
+        run: |
+          echo "Deploying frontend..."
+          # Add frontend deployment script here

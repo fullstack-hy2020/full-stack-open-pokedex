@@ -2,7 +2,10 @@
 
 This repository is used for the CI/CD module of the Full stack open course
 
-Fork the repository to complete course exercises
+## Related Repositories
+
+- **Legacy Code**: The legacy code for the phonebook app and related exercises can be found here: [Fullstack Part 11 - Legacy Code](https://github.com/tuongroth/fullstack-part11)
+- **Pokedex App**: You can also check out the full-stack Pokedex app here: [Pokedex Repository](https://github.com/tuongroth/full-stack-open-pokedex)
 
 ## Commands
 
