@@ -1,0 +1,28 @@
+name: Hello World!
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  hello_world_job:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Say hello
+        run: |
+          echo "Hello World!"
+  date_job:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Now it is
+        run: |
+           echo "The time is $(date)"
+  directory_job:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Directory Content
+        run: |
+           echo "The directory content is $(ls -l)"
+
+           
