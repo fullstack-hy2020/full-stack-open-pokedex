@@ -7,8 +7,12 @@
     "start": "webpack-dev-server --open --mode development",
     "start-prod": "node app.js",
     "test": "jest",
+    "test:e2e": "npx playwright test tests/playwright",
+    "test:report": "playwright show-report",
     "eslint": "eslint './**/*.{js,jsx}'",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "predeploy": "./build_step.sh",
+    "deploy": "git add . && git commit -m 'Deploy build' && git push"
   },
   "repository": {
     "type": "git",
@@ -28,8 +32,10 @@
     "@babel/plugin-transform-runtime": "^7.23.7",
     "@babel/preset-env": "^7.23.7",
     "@babel/preset-react": "^7.23.3",
+    "@playwright/test": "^1.47.2",
     "@testing-library/jest-dom": "^6.2.0",
     "@testing-library/react": "^14.1.2",
+    "@types/node": "^22.7.4",
     "babel-jest": "^29.7.0",
     "babel-loader": "^9.1.3",
     "css-loader": "^6.8.1",
@@ -48,12 +54,18 @@
   },
   "dependencies": {
     "axios": "^1.6.5",
+    "dotenv": "^16.4.5",
     "express": "^4.18.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.1"
   },
   "jest": {
-    "testEnvironment": "jsdom"
+    "testEnvironment": "jsdom",
+    "testPathIgnorePatterns": [
+      "e2e-tests",
+      "/node_modules/",
+      "<rootDir>/tests/playwright/"
+    ]
   }
 }

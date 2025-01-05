@@ -1,0 +1,121 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+env:
+  SKIP_DEPLOYMENT: ${{ contains(join(github.event.commits.*.message, ' '), '#skip') }}
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run eslint
+        id: lint-check
+
+      - name: Build
+        run: npm run build
+        id: build-check
+        continue-on-error: true
+
+      - name: Build Failure Notification
+        if: steps.build-check.outcome == 'failure'
+        run: |
+          BASE_URL="${{ secrets.BASE_URL }}"
+          WEBHOOK_PATH="${{ secrets.WEBHOOK_PATH }}"
+          FULL_URL="${BASE_URL}${WEBHOOK_PATH}"
+          CURRENT_TIME=$(date +"%Y-%m-%d %H:%M:%S")
+          curl -X POST -H "Content-Type: application/json" -d '{
+            "username": "lemon196417",
+            "content": "Build Failure Detected",
+            "embeds": [{
+              "title": "Build Failure",
+              "description": "Commit [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) by ${{ github.actor }} broke the build. You can view the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details.",
+              "color": 15158332,
+              "footer": {
+                "text": "Severity: Error • '"$CURRENT_TIME"'"
+              }
+            }]
+          }' "$FULL_URL"
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Test
+        run: npm run test
+        id: test-check
+
+      - name: Run Playwright tests
+        run: npm run test:e2e
+        id: test-e2e-check
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Trigger deployment
+        if: github.ref == 'refs/heads/main' && env.SKIP_DEPLOYMENT == 'false'
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+
+      - name: Deploy to Render
+        if: github.ref == 'refs/heads/main' && env.SKIP_DEPLOYMENT == 'false'
+        run: |
+          echo "Deploying to Render"
+          git push https://github.com/lemon1964/full-stack-open-pokedex.git HEAD:main
+
+      - name: Send Discord Notification on Successful Deployment
+        if: github.ref == 'refs/heads/main' && env.SKIP_DEPLOYMENT == 'false'
+        run: |
+          BASE_URL="${{ secrets.BASE_URL }}"
+          WEBHOOK_PATH="${{ secrets.WEBHOOK_PATH }}"
+          FULL_URL="${BASE_URL}${WEBHOOK_PATH}"
+          CURRENT_TIME=$(date +"%Y-%m-%d %H:%M:%S")
+          curl -X POST -H "Content-Type: application/json" -d '{
+            "username": "lemon196417",
+            "content": "A new version of Pokedex deployed!",
+            "embeds": [{
+              "title": "Deployment Details",
+              "description": "Deployed to [full-stack-open-pokedex-render](https://full-stack-open-pokedex-op08.onrender.com/) by lemon1964",
+              "color": 3066993,
+              "footer": {
+                "text": "Severity: Informational • '"$CURRENT_TIME"'"
+              }
+            }]
+          }' "$FULL_URL"
+        
+      - name: Log Webhook Result
+        run: echo "Webhook message sent successfully."
+        
+
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+  
+      - name: Bump version and push tag
+        if: github.ref == 'refs/heads/main' && env.SKIP_DEPLOYMENT == 'false'
+        uses: anothrNick/github-tag-action@1.71.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          WITH_V: true
+

@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import axiosMock from 'axios'
 import { act } from 'react-dom/test-utils'
 import '@testing-library/jest-dom'
-import PokemonPage from '../src/PokemonPage'
+import PokemonPage from '../../src/PokemonPage'
 
 import { MemoryRouter } from 'react-router-dom'
 
@@ -80,7 +80,7 @@ describe('<PokemonPage />', () => {
       render(
         <MemoryRouter initialEntries={['/pokemon/eevee']}>
           <PokemonPage />
-        </MemoryRouter>,
+        </MemoryRouter>
       )
     })
 
@@ -95,7 +95,7 @@ describe('<PokemonPage />', () => {
       render(
         <MemoryRouter initialEntries={['/pokemon/eevee']}>
           <PokemonPage />
-        </MemoryRouter>,
+        </MemoryRouter>
       )
     })
 
@@ -108,13 +108,19 @@ describe('<PokemonPage />', () => {
     await act(async () => {
       render(
         <MemoryRouter initialEntries={['/pokemon/eevee']}>
-          <PokemonPage previous={previous} next={next}/>
-        </MemoryRouter>,
+          <PokemonPage previous={previous} next={next} />
+        </MemoryRouter>
       )
     })
 
-    expect(screen.getByText('Previous')).toHaveAttribute('href', '/pokemon/ditto')
-    expect(screen.getByText('Next')).toHaveAttribute('href', '/pokemon/vaporeon')
+    expect(screen.getByText('Previous')).toHaveAttribute(
+      'href',
+      '/pokemon/ditto'
+    )
+    expect(screen.getByText('Next')).toHaveAttribute(
+      'href',
+      '/pokemon/vaporeon'
+    )
   })
 
   it('should not render previous and next urls if none exist', async () => {
@@ -124,11 +130,11 @@ describe('<PokemonPage />', () => {
       render(
         <MemoryRouter initialEntries={['/pokemon/eevee']}>
           <PokemonPage />
-        </MemoryRouter>,
+        </MemoryRouter>
       )
     })
 
     expect(screen.queryByText('Previous')).toBeNull()
     expect(screen.queryByText('Next')).toBeNull()
-  })  
+  })
 })
