@@ -11,5 +11,6 @@ app.listen(PORT, () => {
 })
 
 app.get('/health', (req, res) => {
+  console.log('juu') // eslint-disable-line
   res.send('ok')
 })
