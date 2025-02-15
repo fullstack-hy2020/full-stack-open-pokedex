@@ -1,0 +1,17 @@
+name: Health Check
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+   - cron: '0 0 * * *'  # This runs the workflow once a day at midnight UTC
+
+jobs:
+  health_check:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check the deployed service URL
+        uses: jtalk/url-health-check-action@v4
+        with:
+          url: https://full-stack-open-pokedex-lybp.onrender.com/health
