@@ -1,0 +1,26 @@
+name: Testing
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Print GitHub context
+        run: echo "${{ toJson(github) }}"
+
+      - name: Print commit messages
+        run: echo "${{ toJson(github.event.commits.*.message) }}"
+
+      - name: Check for #skip message
+        if: ${{ github.event_name == 'push' && !contains(github.event.commits.*.message, '#skip') }}
+        run: echo "This should not print with #skip message"
+
+      - name: Always print this message
+        run: echo "This should print anyway"

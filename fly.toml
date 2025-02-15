@@ -1,0 +1,15 @@
+app = "unique-app-name" # Reemplaza "your-app-name" con el nombre de tu aplicación en Fly.io
+
+[env]
+  PORT = "3000" # Agrega esto, donde PORT coincide con internal_port a continuación
+
+[processes]
+  app = "node app.js" # Agrega esto
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]

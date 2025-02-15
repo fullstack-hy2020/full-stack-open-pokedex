@@ -1,0 +1,104 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        directory: [backend, frontend]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: npm install
+      working-directory: ${{ matrix.directory }}
+
+    - name: Run lint
+      run: npm run lint
+      working-directory: ${{ matrix.directory }}
+
+  build_and_test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        directory: [backend, frontend]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: npm install
+      working-directory: ${{ matrix.directory }}
+
+    - name: Run build
+      run: npm run build
+      working-directory: ${{ matrix.directory }}
+      if: ${{ matrix.directory == 'frontend' }}
+
+    - name: Run tests
+      run: npm test
+      working-directory: ${{ matrix.directory }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: npm install
+      working-directory: backend
+
+    - name: Build the application
+      run: npm run build
+      working-directory: frontend
+
+    - name: Deploy to Fly.io
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      run: |
+        curl -L https://fly.io/install.sh | sh
+        flyctl auth token $FLY_API_TOKEN
+        flyctl deploy --remote-only
+
+    - name: Bump version and push tag
+      if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
+      uses: anothrNick/github-tag-action@1.64.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  health_check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Perform URL health check
+      uses: fkirc/url-health-check@v1
+      with:
+        urls: https://your-deployed-app-url.com
+        retryCount: 5
+        retryInterval: 30

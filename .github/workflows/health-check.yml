@@ -1,0 +1,19 @@
+name: Health Check
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Ejecuta cada 6 horas
+
+jobs:
+  health_check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Perform URL health check
+      uses: fkirc/url-health-check@v1
+      with:
+        urls: ${{ secrets.HEALTH_CHECK_URL }}
+        follow-redirect: false
+        max-attempts: 3
+        retry-delay: 5s
+        retry-all: false
