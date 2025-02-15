@@ -1,0 +1,87 @@
+name: build, tests and deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  check_skip_tag:
+    runs-on: ubuntu-20.04
+    outputs:
+      should_skip: ${{ steps.check.outputs.should_skip }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: grabbing skip msg
+        id: check
+        run: |
+          if git log -1 --pretty=%B | grep -q '#skip'; then
+            echo "should_skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_skip=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
+  simple_deployment_pipeline:
+    needs: [check_skip_tag]
+    timeout-minutes: 5
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm ci && npx playwright install --with-deps
+
+      - name: Check style
+        run: npm run eslint
+
+      - name: build
+        run: npm run build
+
+      - name: test
+        run: npm run test
+
+      - name: run e2e tests
+        run: npm run e2e
+
+      - if: github.event_name == 'push' && needs.check_skip_tag.outputs.should_skip == 'false'
+        name: deploy to render
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+
+  tag_release:
+    needs: [simple_deployment_pipeline, check_skip_tag]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - if: github.event_name == 'push' && needs.check_skip_tag.outputs.should_skip == 'false'
+        name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.67.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+
+  notify_job:
+    needs: [simple_deployment_pipeline, tag_release]
+    runs-on: ubuntu-20.04
+    if: always()
+    steps:
+      - name: Build Failure
+        uses: rjstone/discord-webhook-notify@v1
+        if: needs.simple_deployment_pipeline.result == 'failure' || needs.tag_release == 'failure'
+        with:
+          severity: error
+          details: Build Failed!
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Build Success
+        uses: rjstone/discord-webhook-notify@v1
+        if: needs.simple_deployment_pipeline.result == 'success' || needs.tag_release == 'success'
+        with:
+          severity: info
+          details: Build Succeeded!
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}

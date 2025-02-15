@@ -1,0 +1,32 @@
+name: Periodic actions
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+
+jobs:
+  health-check:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Perform Health Check
+        run: |
+          response=$(curl --write-out '%{http_code}' --silent --output /dev/null https://full-stack-open-pokedex-bwyj.onrender.com/health)
+          echo "HEALTH_CHECK_RESPONSE=$response" >> $GITHUB_ENV
+
+      - name: Notify health check failure
+        uses: rjstone/discord-webhook-notify@v1
+        if: env.HEALTH_CHECK_RESPONSE != '200'
+        with:
+          severity: error
+          details: Health check Failed!
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Notify health check success
+        uses: rjstone/discord-webhook-notify@v1
+        if: env.HEALTH_CHECK_RESPONSE == '200'
+        with:
+          severity: info
+          details: Health check successful!
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
