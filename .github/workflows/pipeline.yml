@@ -1,0 +1,36 @@
+
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request: 
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+
+  simple_deployment_pipeline:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+      - name: Check style
+        run: npm run eslint
+      - name: build
+        run: npm run build
+      - name: test
+        run: npm run test
+      - name: installing browsers
+        run: npx playwright install
+      - name: installing playwright deps
+        run: sudo npx playwright install-deps
+      - name: test e2e
+        run: npm run test:e2e
+      - name: Trigger deployment
+        run: curl https://api.render.com/deploy/srv-${{secrets.RENDER_SERVICE_ID}}?key=${{secrets.RENDER_API_KEY}}
