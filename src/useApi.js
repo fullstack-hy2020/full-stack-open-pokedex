@@ -14,6 +14,8 @@ const useApi = (url, mapResults = (result) => result) => {
       .finally(() => setIsLoading(false))
   }, [url])
 
+  console.log('small change')
+
   return { data, isLoading, error }
 }
 

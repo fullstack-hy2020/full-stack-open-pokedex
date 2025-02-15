@@ -1,0 +1,22 @@
+name: Hello World!
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  hello_world_job:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Say hello
+        run: |
+          echo "Hello World!"
+        
+      - name: Print the current date
+        run: |
+          echo "The current date is $(date)"
+
+      - name: List files in the current directory
+        run: |
+          ls -l

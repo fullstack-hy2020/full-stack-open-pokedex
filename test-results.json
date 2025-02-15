@@ -1,0 +1,74 @@
+{
+  "config": {
+    "configFile": "/Users/arttuputtonen/Desktop/fullstack_kurssi/full-stack-open-pokedex/playwright.config.js",
+    "rootDir": "/Users/arttuputtonen/Desktop/fullstack_kurssi/full-stack-open-pokedex/test/playwright",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 15000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/arttuputtonen/Desktop/fullstack_kurssi/full-stack-open-pokedex/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {},
+        "id": "",
+        "name": "",
+        "testDir": "/Users/arttuputtonen/Desktop/fullstack_kurssi/full-stack-open-pokedex/test/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "version": "1.46.0",
+    "workers": 4,
+    "webServer": {
+      "command": "npm run start",
+      "port": 8081,
+      "timeout": 120000,
+      "reuseExistingServer": true
+    }
+  },
+  "suites": [],
+  "errors": [
+    {
+      "message": "Error: No tests found",
+      "stack": "Error: No tests found"
+    }
+  ],
+  "stats": {
+    "startTime": "2024-08-15T09:43:05.515Z",
+    "duration": 1884.4600000000003,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

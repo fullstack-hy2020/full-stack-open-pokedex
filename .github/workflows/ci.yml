@@ -1,0 +1,57 @@
+name: CI Pipeline
+
+on: 
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build the app
+      run: npm run build  
+
+    - name: e2e tests
+      uses: cypress-io/github-action@v5
+      with:
+        command: npm run test:cypress 
+        start: npm run start-prod      
+        wait-on: http://localhost:5001  
+        wait-on-timeout: 120            
+
+    - name: Upload Cypress Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cypress-report
+        path: cypress/reports
+
+    - name: Notify on success
+      if: success()
+      run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d '{"content": "Build and tests succeeded!"}' \
+          ${{ secrets.DISCORD_WEBHOOK }}
+
+    - name: Notify on failure
+      if: failure()
+      run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d '{"content": "Build or tests failed at commit ${{ github.sha }} by ${{ github.actor }}. Check details at: ${{ github.event.head_commit.url }}"}' \
+          ${{ secrets.DISCORD_WEBHOOK }}

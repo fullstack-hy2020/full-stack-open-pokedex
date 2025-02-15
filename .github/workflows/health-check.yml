@@ -1,0 +1,22 @@
+name: Health Check
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'  # Runs every hour.
+  workflow_dispatch:  # Allows manual triggering of the workflow.
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check website health
+      run: |
+        curl -s -o /dev/null -w "%{http_code}" --max-time 5 https://full-stack-open-pokedex-1y6i.onrender.com/ | grep 200
+
+    - name: Notify on failure
+      if: failure()
+      run: |
+        curl -X POST -H "Content-Type: application/json" \
+        -d '{"content": "Health check failed for https://full-stack-open-pokedex-1y6i.onrender.com/m"}' \
+        ${{ secrets.DISCORD_WEBHOOK }}
