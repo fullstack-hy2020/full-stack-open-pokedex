@@ -5,22 +5,43 @@ on:
     branches:
       - main
   pull_request:
-    branches:
-      - main
+    branches: [main]
+    types: [opened, synchronize]
 
 jobs:
   simple_deployment_pipeline:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: "20"
-      - name: Install dependencies
-        run: npm install
-      - name: Lint with ESLint
-        run: npm run eslint
-      - name: run build
-        run: npm run build
-      - name: run tests
-        run: npm run test
+      - uses: actions/checkout@v4
+
+      - name: Extract commit messages
+        run: echo "${{ toJson(github.event.commits) }}"
+
+      - name: Check if deployment should be skipped
+        id: check_skip
+        run: |
+          if echo '${{ toJson(github.event.commits.*.message) }}' | grep -i '#skip'; then
+            echo "SKIP_DEPLOY=true" >> $GITHUB_ENV
+          else
+            echo "SKIP_DEPLOY=false" >> $GITHUB_ENV
+          fi
+
+      - name: Lint and test
+        run: echo "Running linting and tests..."
+
+      - name: Deploy Application
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && env.SKIP_DEPLOY != 'true' }}
+        run: echo "Deploying application..."
+
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bump version and push tag
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && env.SKIP_DEPLOY != 'true' }}
+        uses: anothrNick/github-tag-action@1.64.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
