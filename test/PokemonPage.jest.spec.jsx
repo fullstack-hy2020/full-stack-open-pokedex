@@ -1,10 +1,9 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import axiosMock from 'axios'
+import axios from 'axios'
 import { act } from 'react-dom/test-utils'
 import '@testing-library/jest-dom'
 import PokemonPage from '../src/PokemonPage'
-
 import { MemoryRouter } from 'react-router-dom'
 
 jest.mock('axios')
@@ -74,13 +73,13 @@ const next = {
 
 describe('<PokemonPage />', () => {
   it('should render abilities', async () => {
-    axiosMock.get.mockResolvedValueOnce({ data: pokemonList })
+    axios.get.mockResolvedValueOnce({ data: pokemonList })
 
     await act(async () => {
       render(
         <MemoryRouter initialEntries={['/pokemon/eevee']}>
           <PokemonPage />
-        </MemoryRouter>,
+        </MemoryRouter>
       )
     })
 
@@ -89,13 +88,13 @@ describe('<PokemonPage />', () => {
   })
 
   it('should render stats', async () => {
-    axiosMock.get.mockResolvedValueOnce({ data: pokemonList })
+    axios.get.mockResolvedValueOnce({ data: pokemonList })
 
     await act(async () => {
       render(
         <MemoryRouter initialEntries={['/pokemon/eevee']}>
           <PokemonPage />
-        </MemoryRouter>,
+        </MemoryRouter>
       )
     })
 
@@ -103,13 +102,13 @@ describe('<PokemonPage />', () => {
   })
 
   it('should render previous and next urls if they exist', async () => {
-    axiosMock.get.mockResolvedValueOnce({ data: pokemonList })
+    axios.get.mockResolvedValueOnce({ data: pokemonList })
 
     await act(async () => {
       render(
         <MemoryRouter initialEntries={['/pokemon/eevee']}>
-          <PokemonPage previous={previous} next={next}/>
-        </MemoryRouter>,
+          <PokemonPage previous={previous} next={next} />
+        </MemoryRouter>
       )
     })
 
@@ -118,17 +117,17 @@ describe('<PokemonPage />', () => {
   })
 
   it('should not render previous and next urls if none exist', async () => {
-    axiosMock.get.mockResolvedValueOnce({ data: pokemonList })
+    axios.get.mockResolvedValueOnce({ data: pokemonList })
 
     await act(async () => {
       render(
         <MemoryRouter initialEntries={['/pokemon/eevee']}>
           <PokemonPage />
-        </MemoryRouter>,
+        </MemoryRouter>
       )
     })
 
     expect(screen.queryByText('Previous')).toBeNull()
     expect(screen.queryByText('Next')).toBeNull()
-  })  
+  })
 })
