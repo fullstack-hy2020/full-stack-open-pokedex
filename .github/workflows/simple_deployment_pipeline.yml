@@ -2,8 +2,8 @@ name: Simple Delpoyment pipeline
 
 on: 
     push: 
-        branches: 
-            - main
+      branches: 
+          - main
     pull_request: 
       branches: 
         - main
@@ -30,3 +30,14 @@ jobs:
             - name: pseudo Delpoyment
               if: ${{ github.event_name == 'push' }}
               run: echo "Deployment"
+    tag_release:
+      needs: 
+        - simple_deployment_job
+      runs-on: ubuntu-20.04
+      steps:
+        - name: Bump version and  push tag
+          if: ${{ github.event_name == 'push' }}
+          uses: anothrNick/github-tag-action@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            DEFAULT_BUMP: patch
