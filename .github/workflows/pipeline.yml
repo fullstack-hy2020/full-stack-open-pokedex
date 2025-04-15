@@ -50,14 +50,6 @@ jobs:
           severity: error
           details: Test Failed!
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-      - name: Discord Webhook Notify Cancelled
-        uses: rjstone/discord-webhook-notify@v1
-        if: cancelled()
-        with:
-          severity: warn
-          details: Test Cancelled!
-          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-
   tag_release:
     needs: [ simple_deployment_pipeline ]
     runs-on: ubuntu-20.04
