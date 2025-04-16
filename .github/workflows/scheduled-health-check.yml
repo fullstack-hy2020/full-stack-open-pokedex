@@ -1,0 +1,36 @@
+name: Scheduled Health-check
+
+on:
+  schedule:
+    - cron: '5/6 0-23 * * *' #scheduled to run every five minutes
+  push:
+    branches:
+      - test-branch-base
+
+env:
+  HEALTH_CHECK_URL: https://full-stack-open-pokedex-little-hill-4471.fly.dev/health
+
+jobs:
+  check-deployed-url-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Perform health check
+        uses: jtalk/url-health-check-action@v4
+        with: 
+          url: ${{env.HEALTH_CHECK_URL}}
+          max-attempts: 3
+          retry-delay: 5s
+      - if: ${{ success() }}
+        name: Notify Passed Health Check
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: info
+          details: "Health Check Passed For Deployment of ${{github.repository}}. URL: ${{env.HEALTH_CHECK_URL}}"
+          webhookUrl: ${{secrets.DISCORD_WEBHOOK}} 
+      - if: ${{ failure() }}
+        name: Notify Failed Health Check
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: error
+          details: "Health Check Failed For Deployment of ${{github.repository}}. URL: ${{env.HEALTH_CHECK_URL}}"
+          webhookUrl: ${{secrets.DISCORD_WEBHOOK}} 
