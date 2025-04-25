@@ -1,11 +1,29 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter as Router } from 'react-router-dom'
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from 'react-router-dom'
 import App from './App'
 import './styles.css'
 
+const router = createBrowserRouter(
+  [
+    {
+      path: '*',
+      element: <App />,
+    },
+  ],
+  {
+    future: {
+      v7_startTransition: true,
+      v7_relativeSplatPath: true,
+    },
+  }
+)
+
 ReactDOM.createRoot(document.getElementById('app')).render(
-  <Router>
-    <App />
-  </Router>
+  <React.StrictMode>
+    <RouterProvider router={router} />
+  </React.StrictMode>
 )

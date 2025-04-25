@@ -4,6 +4,19 @@ import { BrowserRouter } from 'react-router-dom'
 import '@testing-library/jest-dom'
 import PokemonList from '../src/PokemonList'
 
+const originalWarn = console.warn
+beforeAll(() => {
+  console.warn = (...args) => {
+    if (
+      args[0]?.includes('React Router Future Flag Warning')
+    ) return
+    originalWarn(...args)
+  }
+})
+
+afterAll(() => {
+  console.warn = originalWarn
+})
 
 const pokemonList = [{
   url: 'https://pokeapi.co/api/v2/pokemon/1/',
