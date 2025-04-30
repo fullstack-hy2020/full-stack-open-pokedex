@@ -43,7 +43,10 @@ module.exports = {
   },
   devServer: {
     historyApiFallback: true,
-  },
+    host: '0.0.0.0',
+    allowedHosts: 'all',
+    port: 8080
+  }, 
   plugins: [
     new HtmlWebPackPlugin({
       template: "./public/index.html",
