@@ -2,13 +2,14 @@
   "name": "fullstackopen-cicd",
   "version": "1.0.0",
   "description": "Full Stack Open",
-  "main": "src/index.js",
+  "main": "src/app.js",
   "scripts": {
     "start": "webpack-dev-server --open --mode development",
     "start-prod": "node app.js",
     "test": "jest",
     "eslint": "eslint './**/*.{js,jsx}'",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "test:e2e": "playwright test"
   },
   "repository": {
     "type": "git",
@@ -28,6 +29,7 @@
     "@babel/plugin-transform-runtime": "^7.23.7",
     "@babel/preset-env": "^7.23.7",
     "@babel/preset-react": "^7.23.3",
+    "@playwright/test": "^1.52.0",
     "@testing-library/jest-dom": "^6.2.0",
     "@testing-library/react": "^14.1.2",
     "babel-jest": "^29.7.0",
@@ -54,6 +56,7 @@
     "react-router-dom": "^6.21.1"
   },
   "jest": {
-    "testEnvironment": "jsdom"
+    "testEnvironment": "jsdom",
+    "testPathIgnorePatterns": ["e2e-tests"]
   }
 }
