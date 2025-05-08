@@ -1,0 +1,23 @@
+{
+	"name": "full-stack-open-pokedex",
+	"compatibility_date": "2025-04-21",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"upload_source_maps": true,
+    "dev": {
+        "ip": "127.0.0.1",
+        "port": 3000,
+        "local_protocol": "http"
+    },
+	"observability": {
+		"enabled": true
+	},
+	"placement": {
+		"mode": "smart"
+	},
+	"vars": {
+		"PNPM_VERSION": "10.7.0",
+		"NODE_VERSION": "23.7.0"
+	}
+}

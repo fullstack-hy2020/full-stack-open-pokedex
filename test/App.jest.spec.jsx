@@ -1,12 +1,26 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import axiosMock from 'axios'
-import { act } from 'react-dom/test-utils'
+import { act } from 'react';
 import '@testing-library/jest-dom'
 import { BrowserRouter as Router } from 'react-router-dom'
 import App from '../src/App'
 
 jest.mock('axios')
+
+const originalWarn = console.warn
+beforeAll(() => {
+  console.warn = (...args) => {
+    if (
+      args[0]?.includes('React Router Future Flag Warning')
+    ) return
+    originalWarn(...args)
+  }
+})
+
+afterAll(() => {
+  console.warn = originalWarn
+})
 
 describe('<App />', () => {
   it('fetches data', async () => {

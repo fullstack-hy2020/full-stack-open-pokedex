@@ -1,0 +1,58 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        run: npm install && npm test
+
+      - name: Trigger Cloudflare Pages Deploy Hook
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          curl -X POST "${{ secrets.CLOUDFLARE_WEBHOOK }}"
+
+  notify_success:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: ${{ success() }}
+    steps:
+      - name: Notify Discord about successful deployment
+        uses: rjstone/discord-webhook-notify@v1.0.4
+        with:
+          severity: info
+          details: '✅ Deployment to Cloudflare Pages was successful!'
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+
+  notify_failure:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: ${{ failure() }}
+    steps:
+      - name: Notify Discord about failed deployment
+        uses: rjstone/discord-webhook-notify@v1.0.4
+        with:
+          severity: error
+          details: '❌ Deployment to Cloudflare Pages failed. Please check the logs.'
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+
+  notify_cancelled:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: ${{ cancelled() }}
+    steps:
+      - name: Notify Discord about cancelled deployment
+        uses: rjstone/discord-webhook-notify@v1.0.4
+        with:
+          severity: warn
+          details: '⚠️ Deployment to Cloudflare Pages was cancelled.'
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}

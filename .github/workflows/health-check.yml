@@ -1,0 +1,21 @@
+name: Health Check
+
+on:
+  # schedule:
+  #  - cron: '0 8 1 * *'
+  workflow_dispatch:
+
+env:
+  ENABLED: false
+
+jobs:
+  ping-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if deployed app is alive
+        uses: jtalk/url-health-check-action@v4
+        with:
+          url: ${{ secrets.APP_URL }}
+          follow-redirect: true
+          max-attempts: 3
+          retry-delay: 10s

@@ -1,0 +1,29 @@
+name: API Health Check
+
+on:
+  # schedule:
+  #  - cron: '0 8 1 * *'
+  workflow_dispatch:
+
+env:
+  ENABLED: false
+
+jobs:
+  check-endpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if health check is enabled
+        run: |
+          if [ "$ENABLED" != "true" ]; then
+            echo "Health check is disabled. Skipping..."
+            exit 0
+          fi
+
+      - name: Send HTTP request to PokeAPI
+        run: |
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.API_URL }})
+          echo "Status code: $RESPONSE"
+          if [ "$RESPONSE" -ne 200 ]; then
+            echo "PokeAPI is not healthy!"
+            exit 1
+          fi
