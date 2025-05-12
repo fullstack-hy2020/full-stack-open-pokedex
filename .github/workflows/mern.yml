@@ -1,0 +1,51 @@
+name: Local MERN CI/CD
+
+on:
+  push:
+    branches:
+      - dev-test
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      LOCAL_IP: ${{ secrets.LOCAL_IP }}
+      USERNAME: ${{ secrets.USERNAME }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the application
+        run: npm run build
+
+      - name: Create SSH directory
+        run: mkdir -p ~/.ssh
+
+      - name: Add private key
+        run: |
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/key.pem
+          chmod 700 ~/.ssh
+
+      - name: Echo LOCAL_IP
+        run: echo "USERNAME is $USERNAME"
+
+      # - name: Add server to known hosts
+      #   run: ssh-keyscan -H "$LOCAL_IP" >> ~/.ssh/known_hosts
+
+      - name: Test SSH connection
+        run: ssh -i ~/.ssh/key.pem "$USERNAME@$LOCAL_IP"
+      # No need to pass env again here because it's already inherited globally
+
+      - name: Run on ubuntu server
+        run: npm run start-prod

@@ -1,0 +1,28 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - dev-test # Trigger the workflow on push to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Execute remote command via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.LOCAL_IP }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "Connected successfully to:"
+            hostname
+            echo "Listing contents of current directory:"
+            pwd
+            ls -la
