@@ -9,7 +9,7 @@ const useApi = (url, mapResults = (result) => result) => {
     setIsLoading(true)
     axios
       .get(url)
-      .then(response => setData(mapResults(response.data)))
+      .then((response) => setData(mapResults(response.data)))
       .catch(setError)
       .finally(() => setIsLoading(false))
   }, [url])
@@ -17,4 +17,5 @@ const useApi = (url, mapResults = (result) => result) => {
   return { data, isLoading, error }
 }
 
+// comment
 export { useApi }
