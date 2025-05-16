@@ -1,0 +1,78 @@
+name: Deployment pipeline
+
+env: 
+  CONDITION: ${{ contains(join(github.event.commits.*.message), '#skip') }}
+
+on:
+  push:
+    branches:
+      - main
+  # workflow will run when a PR into the main branch is opened or updated.  
+  pull_request:    
+    branches: [main]    
+    types: [opened, synchronize] 
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies 
+        run: npm install  
+      - name: Check style
+        run: npm run eslint
+      # Altough we will not actually use this build here, we should do a build in the pipeline to make sure it works before Render builds it (in the build_step.sh) during deployment. 
+      - name: Build
+        run: npm run build
+      - name: Run tests
+        run: npm run test
+
+      ## Comment these to save time. I have tested it and it works.
+      # - name: Install Playwright Browsers
+      #   run: npx playwright install --with-deps
+      # - name: Run Playwright tests
+      #   run: npm run test:e2e
+
+      - name: github context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: condition
+        env:
+          CONDITION: ${{ env.CONDITION }}
+        run: echo "$CONDITION"
+
+      # Don't trigger for a pull_request event, only for a push event.
+      # ("When a pull request is merged, the name of the event is somehow paradoxically push, the same event that happens when pushing the code to the repository.")
+      - name: Trigger deployment
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message), '#skip') }}
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+
+      ## Comment these to save time. I have tested it and it works.
+      # - uses: actions/upload-artifact@v4
+      #   if: ${{ !cancelled() }}
+      #   with:
+      #     name: playwright-report
+      #     path: playwright-report/
+      #     retention-days: 30
+
+  tag_release:
+    if: ${{ !contains(join(github.event.commits.*.message), '#skip') }}
+    runs-on: ubuntu-24.04
+    needs: [simple_deployment_pipeline]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump version and push tag
+        if: ${{ github.event_name == 'push' }}
+        uses: anothrNick/github-tag-action@1.73.0
+        env:
+          # Third party action needs the token for authentication in your repository.
+          # At the start of each workflow job, GitHub automatically creates a unique GITHUB_TOKEN secret to use in your workflow. You can use the GITHUB_TOKEN to authenticate in the workflow job.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+
+
+        # run: npx semantic-release
