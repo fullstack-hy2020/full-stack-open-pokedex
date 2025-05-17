@@ -33,7 +33,7 @@ jobs:
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
           title: The latest build failed! :(
-          message: "**${{ github.event.pull_request.title }}**\n**Creator:** ${{ github.event.pull_request.user.login }}\n${{ github.event.pull_request.html_url }}"
+          message: "{{ toJson(github.event.commits.*.url) }} ❌"
           include_image: true
           avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
           username: GitHub PR Notifier
@@ -72,7 +72,7 @@ jobs:
       with:
         webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
         title: New Deployment live!
-        message: "**${{ github.event.pull_request.title }}**\n**Creator:** ${{ github.event.pull_request.user.login }}\n${{ github.event.pull_request.html_url }}"
+        message: "${{ toJson(github.event.commits.*.url) }} ✅"
         include_image: true
         avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
         username: GitHub PR Notifier
