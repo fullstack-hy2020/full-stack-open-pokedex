@@ -1,0 +1,39 @@
+# fly.toml app configuration file generated for full-stack-open-pokedex-polished-lake-1770 on 2025-06-14T10:00:03-07:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+app = 'full-stack-open-pokedex-polished-lake-1770'
+primary_region = 'ord'
+
+[env]
+  PORT = "3000"
+
+[processes]
+  app = "node app.js"
+
+[build]
+
+[deploy]
+  strategy = 'canary'
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+  [[http_service.http_checks]]
+    interval = '10s'
+    timeout = '2s'
+    grace_period = '5s'
+    method = 'get'
+    path = '/health'
+    protocol = 'http'
+    restart_limit = 0
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
