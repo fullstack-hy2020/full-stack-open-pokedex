@@ -1,0 +1,27 @@
+name: Health check 
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+  
+  schedule:
+    - cron: '0 10 * * 1,3,5'
+
+jobs:
+  check_health:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Print datetime
+        run: date
+      - name: Check health of the deployed app
+        uses: jtalk/url-health-check-action@v4
+        with:
+          url: https://full-stack-open-pokedex-dqlr.onrender.com/health
+          follow-redirect: false
+          max-attempts: 3
+          retry-delay: 5s
+          retry-all: false

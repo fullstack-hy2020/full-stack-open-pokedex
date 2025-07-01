@@ -1,0 +1,67 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Lint
+        run: npm run eslint
+      - name: Build
+        run: npm run build
+      - name: Test
+        run: npm run test
+      - name: Install e2e test dependencies
+        run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+      - name: Trigger deployment in Render
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ', '), '#skip') }}
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+      - name: Notify success to Discord
+        if: success()
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+            -d '{"content": ":white_check_mark: Test succeeded!"}' \
+            ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Notify failure to Discord
+        if: failure()
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+            -d '{"content": ":x: Test failed!"}' \
+            ${{ secrets.DISCORD_WEBHOOK }}
+      
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ', '), '#skip') }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.73.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
