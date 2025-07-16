@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1752674448686" clover="3.2.0">
+  <project timestamp="1752674448686" name="All files">
+    <metrics statements="44" coveredstatements="42" conditionals="17" coveredconditionals="16" methods="22" coveredmethods="21" elements="83" coveredelements="79" complexity="0" loc="44" ncloc="44" packages="1" files="8" classes="8"/>
+    <file name="App.jsx" path="C:\Users\Buugi\Documents\GitHub\full-stack-open-pokedex\src\App.jsx">
+      <metrics statements="9" coveredstatements="9" conditionals="2" coveredconditionals="2" methods="5" coveredmethods="5"/>
+      <line num="5" count="1" type="stmt"/>
+      <line num="6" count="4" type="stmt"/>
+      <line num="7" count="4" type="stmt"/>
+      <line num="9" count="4" type="stmt"/>
+      <line num="10" count="2" type="stmt"/>
+      <line num="11" count="1" type="stmt"/>
+      <line num="12" count="1" type="stmt"/>
+      <line num="15" count="4" type="stmt"/>
+      <line num="25" count="1" type="stmt"/>
+    </file>
+    <file name="ErrorMessage.jsx" path="C:\Users\Buugi\Documents\GitHub\full-stack-open-pokedex\src\ErrorMessage.jsx">
+      <metrics statements="2" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
+      <line num="3" count="1" type="stmt"/>
+      <line num="4" count="0" type="stmt"/>
+    </file>
+    <file name="LoadingSpinner.jsx" path="C:\Users\Buugi\Documents\GitHub\full-stack-open-pokedex\src\LoadingSpinner.jsx">
+      <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+      <line num="3" count="1" type="stmt"/>
+      <line num="4" count="4" type="stmt"/>
+    </file>
+    <file name="PokemonAbility.jsx" path="C:\Users\Buugi\Documents\GitHub\full-stack-open-pokedex\src\PokemonAbility.jsx">
+      <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+      <line num="3" count="1" type="stmt"/>
+      <line num="4" count="8" type="stmt"/>
+    </file>
+    <file name="PokemonList.jsx" path="C:\Users\Buugi\Documents\GitHub\full-stack-open-pokedex\src\PokemonList.jsx">
+      <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
+      <line num="4" count="1" type="stmt"/>
+      <line num="5" count="1" type="stmt"/>
+      <line num="8" count="2" type="stmt"/>
+    </file>
+    <file name="PokemonPage.jsx" path="C:\Users\Buugi\Documents\GitHub\full-stack-open-pokedex\src\PokemonPage.jsx">
+      <metrics statements="14" coveredstatements="13" conditionals="12" coveredconditionals="11" methods="7" coveredmethods="7"/>
+      <line num="8" count="16" type="stmt"/>
+      <line num="10" count="1" type="stmt"/>
+      <line num="11" count="8" type="stmt"/>
+      <line num="12" count="8" type="stmt"/>
+      <line num="14" count="8" type="cond" truecount="2" falsecount="0"/>
+      <line num="15" count="4" type="stmt"/>
+      <line num="17" count="4" type="cond" truecount="1" falsecount="1"/>
+      <line num="18" count="0" type="stmt"/>
+      <line num="21" count="4" type="stmt"/>
+      <line num="22" count="8" type="stmt"/>
+      <line num="27" count="8" type="stmt"/>
+      <line num="28" count="4" type="stmt"/>
+      <line num="30" count="4" type="stmt"/>
+      <line num="48" count="8" type="stmt"/>
+    </file>
+    <file name="config.js" path="C:\Users\Buugi\Documents\GitHub\full-stack-open-pokedex\src\config.js">
+      <metrics statements="2" coveredstatements="2" conditionals="2" coveredconditionals="2" methods="0" coveredmethods="0"/>
+      <line num="1" count="2" type="stmt"/>
+      <line num="4" count="2" type="stmt"/>
+    </file>
+    <file name="useApi.js" path="C:\Users\Buugi\Documents\GitHub\full-stack-open-pokedex\src\useApi.js">
+      <metrics statements="10" coveredstatements="10" conditionals="1" coveredconditionals="1" methods="5" coveredmethods="5"/>
+      <line num="5" count="4" type="cond" truecount="1" falsecount="0"/>
+      <line num="6" count="8" type="stmt"/>
+      <line num="7" count="8" type="stmt"/>
+      <line num="8" count="8" type="stmt"/>
+      <line num="10" count="8" type="stmt"/>
+      <line num="11" count="4" type="stmt"/>
+      <line num="13" count="4" type="stmt"/>
+      <line num="15" count="4" type="stmt"/>
+      <line num="17" count="4" type="stmt"/>
+      <line num="20" count="8" type="stmt"/>
+    </file>
+  </project>
+</coverage>

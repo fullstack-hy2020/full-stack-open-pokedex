@@ -1,0 +1,31 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build, Test, and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run linter
+        run: npm run eslint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Deploy to Fly.io
+        uses: superfly/flyctl-actions@1.1
+        with:
+          args: deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

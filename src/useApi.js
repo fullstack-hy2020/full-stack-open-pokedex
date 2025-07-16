@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import config from './config' 
 
-const useApi = (url, mapResults = (result) => result) => {
+const useApi = (path, mapResults = (result) => result) => {
   const [data, setData] = useState()
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState()
+
   useEffect(() => {
     setIsLoading(true)
+
     axios
-      .get(url)
+      .get(`${config.apiBaseUrl}${path}`) 
       .then(response => setData(mapResults(response.data)))
       .catch(setError)
       .finally(() => setIsLoading(false))
-  }, [url])
+  }, [path])
 
   return { data, isLoading, error }
 }
