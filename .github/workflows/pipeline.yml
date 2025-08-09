@@ -1,0 +1,50 @@
+name: deployment pipeline
+
+on: 
+  push:
+    branches:
+    - main
+  pull_request:
+    # pull requests to main, or when they are opened, or existing ones are updated
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-24.04
+    steps:
+      # generally necessary
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+        # actual pipline
+      - name: Install dependencies
+        run: npm install
+      - name: Check style 
+        run: npm run eslint
+      - name: Build
+        run: npm run build
+      - name: jest 
+        run: npm run test
+      - name: playwright e2e testing
+        run: |
+          npm ci
+          npx playwright install --with-deps
+          npx playwright test
+  # can only run when simple deployment pipeline completes sucessfully.
+  tag_release:
+    runs-on: ubuntu-24.04
+    needs: [simple_deployment_pipeline]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trigger deployment
+        # if statement in yml
+        if: ${{ github.event_name == 'push' }}
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+      - name: Bump version and push tag
+        if: ${{ github.event_name == 'push' }}
+        uses: anothrNick/github-tag-action@1.73.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
