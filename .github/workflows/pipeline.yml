@@ -1,0 +1,82 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - pending
+
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies 
+        run: npm install
+
+      - name: Check style
+        run: npm run eslint
+
+      - name: Test
+        run: npm run test
+
+      - name: e2e tests
+        if: ${{ !contains(github.event.head_commit.message, '#skip') }}
+        uses: cypress-io/github-action@v5
+        with:
+          browser: chrome
+          build: npm run build
+          start: npm run start-prod
+          wait-on: http://localhost:5000
+        env:
+          ELECTRON_EXTRA_LAUNCH_ARGS: '--disable-gpu'
+
+      - name: Trigger deployment
+        if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+
+      - name: Failure Notification
+        uses: tsickert/discord-webhook@v5.3.0
+        if: failure()
+        with:
+          embed-color: 14701393
+          username: Discord Notify Action
+          embed-title: ❌  Deployment failed on ${{github.repository}}
+          embed-description: ${{github.event.head_commit.message}}
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Success Notification
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          username: Github Actions
+          embed-color: 6144854
+          embed-title: ✅  New version deployed of ${{github.repository}}
+          embed-description: ${{github.event.head_commit.message}}
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-20.04
+    if: github.event.pull_request.merged == true
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: '0'
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.71.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+          WITH_V: true

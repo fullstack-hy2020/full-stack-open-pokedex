@@ -13,3 +13,8 @@ Start by running `npm install` inside the project folder
 `npm run eslint` to run eslint
 `npm run build` to make a production build
 `npm run start-prod` to run your production build
+
+## Review
+
+Discord review accepted :
+https://discord.com/channels/757581218085863474/885181312019877908/1323403797716009020
