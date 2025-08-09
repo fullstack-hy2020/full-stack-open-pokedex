@@ -1,0 +1,107 @@
+name: Deployment Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    types: [ opened, synchronize ]
+
+jobs:
+  verify_and_build:
+    name: 'Verify and Build'
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Application
+        run: |
+          npm install
+          npx playwright install --with-deps
+
+      - name: Code Quality Checks
+        run: npm run eslint
+
+      - name: Test Suite
+        run: |
+          npm run test
+          npm run test:e2e
+
+      - name: Build Application
+        run: npm run build
+
+      - name: Deploy to Production
+        if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+
+      - name: Notify Build Success
+        if: success()
+        uses: sarisia/actions-status-discord@v1.15.3
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "✅ Build Successful"
+          description: |
+            Build succeeded in ${{ github.repository }}
+            Commit: ${{ github.sha }}
+          color: 0x00FF00
+          username: GitHub Actions
+          status: success
+
+      - name: Notify Build Failure
+        if: failure()
+        uses: sarisia/actions-status-discord@v1.15.3
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "❌ Build Failed"
+          description: |
+            Build failed in ${{ github.repository }}
+            Commit: ${{ github.sha }}
+          color: 0xFF0000
+          username: GitHub Actions
+          status: failure
+
+  create_release:
+    name: 'Create Release'
+    if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
+    needs: [ verify_and_build ]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
+
+      - name: Create Version Tag
+        id: tag
+        uses: anothrNick/github-tag-action@e528bc2b9628971ce0e6f823f3052d1dcd9d512c
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+
+      - name: Notify Release Success
+        if: success()
+        uses: sarisia/actions-status-discord@v1.15.3
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "✅ Release Successful"
+          description: |
+            Successfully deployed version ${{ steps.tag.outputs.new_tag }} to production
+            Commit: ${{ github.sha }}
+          color: 0x00FF00
+          username: GitHub Actions
+          status: success
+
+      - name: Notify Release Failure
+        if: failure()
+        uses: sarisia/actions-status-discord@v1.15.3
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "❌ Release Failed"
+          description: |
+            Release failed for ${{ github.repository }}
+            Commit: ${{ github.sha }}
+          color: 0xFF0000
+          username: GitHub Actions
+          status: failure
