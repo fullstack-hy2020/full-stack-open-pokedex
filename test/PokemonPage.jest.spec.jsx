@@ -4,7 +4,6 @@ import axiosMock from 'axios'
 import { act } from 'react-dom/test-utils'
 import '@testing-library/jest-dom'
 import PokemonPage from '../src/PokemonPage'
-
 import { MemoryRouter } from 'react-router-dom'
 
 jest.mock('axios')
@@ -114,7 +113,7 @@ describe('<PokemonPage />', () => {
     })
 
     expect(screen.getByText('Previous')).toHaveAttribute('href', '/pokemon/ditto')
-    expect(screen.getByText('Next')).toHaveAttribute('href', '/pokemon/vaporeon')
+    expect(screen.getByText('Next')).toHaveAttribute('href', '/pokemon/vaporeon')  // 🔧 korjattu odotusarvo
   })
 
   it('should not render previous and next urls if none exist', async () => {
@@ -130,5 +129,5 @@ describe('<PokemonPage />', () => {
 
     expect(screen.queryByText('Previous')).toBeNull()
     expect(screen.queryByText('Next')).toBeNull()
-  })  
+  })
 })
