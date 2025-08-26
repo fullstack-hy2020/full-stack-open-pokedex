@@ -20,3 +20,5 @@ jobs:
         run: npm run build
       - name: Test
         run: npm run test
+      - name: Run Playwright tests
+        run: npm run test:e2e
