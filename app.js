@@ -1,6 +1,10 @@
 const express = require('express')
 const app = express()
 
+app.get('/health', (req, res) => {
+  res.send('ok')
+})
+
 // get the port from env variable
 const PORT = process.env.PORT || 3100
 
