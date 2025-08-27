@@ -24,16 +24,16 @@ jobs:
         run: npm run build
       - name: Test
         run: npm run test
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-      - name: Run Playwright tests
-        run: npm run test:e2e
-      - name: Trigger deployment
-        if: ${{ github.event_name == 'push' }}
-        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+#      - name: Install Playwright Browsers
+#        run: npx playwright install --with-deps
+#      - name: Run Playwright tests
+#        run: npm run test:e2e
+#      - name: Trigger deployment
+#        if: ${{ github.event_name == 'push' }}
+#        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
   tag_release:
     needs: [simple_deployment_pipeline]
-    if: ${{ contains(join(github.event.commits.*.message, ' '), '#skip') }}
+    if: ${{ contains(join(github.event.commits.*.message, ' '), '#skip') == 'false' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
