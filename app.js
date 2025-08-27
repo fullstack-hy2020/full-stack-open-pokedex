@@ -6,7 +6,7 @@ app.get('/health', (req, res) => {
 })
 
 app.get('/version', (req, res) => {
-  res.send('7')
+  res.send('6')
 })
 
 // get the port from env variable
