@@ -1,0 +1,67 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check_skip:
+    runs-on: ubuntu-22.04
+    outputs:
+      skip: ${{ steps.set-skip.outputs.skip }}
+    steps:
+      - name: Check if commit message contains #skip
+        id: set-skip
+        run: |
+          if echo "${{ github.event.head_commit.message }}" | grep -q "#skip"; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  simple_deployment_pipeline:
+    needs: check_skip
+    if: ${{ needs.check_skip.outputs.skip == 'false' }}
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies 
+        run: npm install  
+
+      - name: Check style
+        run: npm run eslint
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm test
+
+      - name: Deploy to Fly.io
+        uses: superfly/flyctl-actions@1.4
+        with:
+          args: "deploy --remote-only"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  tag_release:
+    needs: [check_skip, simple_deployment_pipeline]
+    if: ${{ needs.check_skip.outputs.skip == 'false' }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.64.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
