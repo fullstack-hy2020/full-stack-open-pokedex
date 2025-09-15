@@ -1,0 +1,96 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm install
+      - name: Check style
+        run: npm run eslint
+      - name: Build the project
+        run: npm run build
+      - name: Run tests
+        run: npm test
+      - name: e2e tests
+        uses: cypress-io/github-action@v5
+        with:
+          command: npm run test:e2e
+          start: npm run start-prod
+          wait-on: http://localhost:5000
+      - name: Set up Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Deploy to Fly.io and Health Check
+        if: ${{ !contains(toJson(github.event.commits.*.message),'#skip') }}
+        run: |
+          flyctl deploy --remote-only
+          if curl -fsS "https://full-stack-open-pokedex-cool-breeze-8404.fly.dev/health" | grep -q "ok"; then
+            echo "Health check passed"
+          else
+            echo "Health check failed"
+            exit 1
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  tag_release:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(toJson(github.event.commits.*.message),'#skip') }}
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.64.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          DRY_RUN: true
+          tag_prefix: "v"
+          release_type: "patch"
+
+  notify_success:
+    needs: [simple_deployment_pipeline]
+    if: success()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Notify success on Discord
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: info
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          text: |
+            ✅ Deployment succeeded!
+            Repo: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+            Actor: ${{ github.actor }}
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  notify_failure:
+    needs: [simple_deployment_pipeline]
+    if: failure()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Notify failure on Discord
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: error
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          text: |
+            ❌ Deployment failed!
+            Repo: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+            Message: ${{ github.event.head_commit.message }}
+            Actor: ${{ github.actor }}
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

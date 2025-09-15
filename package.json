@@ -4,11 +4,12 @@
   "description": "Full Stack Open",
   "main": "src/index.js",
   "scripts": {
-    "start": "webpack-dev-server --open --mode development",
+    "start": "node app.js",
     "start-prod": "node app.js",
     "test": "jest",
-    "eslint": "eslint './**/*.{js,jsx}'",
-    "build": "webpack --mode production"
+    "eslint": "eslint ./src/**/*.{js,jsx} App.js --no-error-on-unmatched-pattern",
+    "build": "webpack --mode production",
+    "test:e2e": "start npm run start-prod & npx cypress run"
   },
   "repository": {
     "type": "git",
@@ -28,11 +29,13 @@
     "@babel/plugin-transform-runtime": "^7.23.7",
     "@babel/preset-env": "^7.23.7",
     "@babel/preset-react": "^7.23.3",
+    "@flydotio/dockerfile": "^0.7.8",
     "@testing-library/jest-dom": "^6.2.0",
     "@testing-library/react": "^14.1.2",
     "babel-jest": "^29.7.0",
     "babel-loader": "^9.1.3",
     "css-loader": "^6.8.1",
+    "cypress": "^12.17.3",
     "eslint": "^8.56.0",
     "eslint-plugin-jest": "^27.6.1",
     "eslint-plugin-react": "^7.33.2",
@@ -43,17 +46,20 @@
     "jest-environment-jsdom": "^29.7.0",
     "style-loader": "^3.3.3",
     "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^4.15.1"
+    "webpack-cli": "^5.1.4"
   },
   "dependencies": {
     "axios": "^1.6.5",
     "express": "^4.18.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.21.1"
+    "react-router-dom": "^6.21.1",
+    "webpack-dev-server": "^4.15.1"
   },
   "jest": {
-    "testEnvironment": "jsdom"
+    "testEnvironment": "jsdom",
+    "testPathIgnorePatterns": [
+      "/cypress/"
+    ]
   }
 }
