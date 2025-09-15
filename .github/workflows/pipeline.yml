@@ -59,3 +59,38 @@ jobs:
           DRY_RUN: true
           tag_prefix: "v"
           release_type: "patch"
+
+  notify_success:
+    needs: [simple_deployment_pipeline]
+    if: success()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Notify success on Discord
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: info
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          text: |
+            ✅ Deployment succeeded!
+            Repo: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+            Actor: ${{ github.actor }}
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  notify_failure:
+    needs: [simple_deployment_pipeline]
+    if: failure()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Notify failure on Discord
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: error
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          text: |
+            ❌ Deployment failed!
+            Repo: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+            Message: ${{ github.event.head_commit.message }}
+            Actor: ${{ github.actor }}
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
