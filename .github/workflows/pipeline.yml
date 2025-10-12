@@ -33,4 +33,7 @@ jobs:
         run: npm run test
 
       - name: e2e Tests
-        run: npm run test:e2e
+        run: npm run test:e2es
+
+      - name: Trigger Render deployment
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
