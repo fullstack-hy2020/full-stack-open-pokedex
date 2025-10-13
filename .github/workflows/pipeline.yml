@@ -39,5 +39,6 @@ jobs:
         run: npm run test:e2e
 
       - name: Trigger Render deployment
+        if: ${{ github.event_name == 'push' }}
         run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
 
