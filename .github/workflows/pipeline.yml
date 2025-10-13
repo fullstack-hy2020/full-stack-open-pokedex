@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
 
 jobs:
   simple_deployment_pipeline:
@@ -36,5 +39,6 @@ jobs:
         run: npm run test:e2e
 
       - name: Trigger Render deployment
+        if: ${{ github.event_name == 'push' }}
         run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
 
