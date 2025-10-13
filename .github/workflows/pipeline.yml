@@ -42,3 +42,8 @@ jobs:
         if: ${{ github.event_name == 'push' }}
         run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
 
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
