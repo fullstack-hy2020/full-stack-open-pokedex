@@ -1,0 +1,5 @@
+# Text
+
+The Language That I Have chosen is Go which is a compiled language that power some of the leading system such kubernetes and docker , it's build by google As Part of the CI Setup there is some steps that every changes should go through first is the linting and go has the popular and production used "Golangci-lint" used by many developers , second is testing which go has built in support for unit testing for the files that end up with _test.go by importing the testing package you can run the test through the go test , you can also used an external tool testify to perform some advancement tests with mock interfaces  and finally the building process knowing that go is compiled language you can build the project by compile it to executable binary code through the command go build .
+some of the alternatives are gitlab ci/cd , circle ci , travis ci , the setup of self-hosted vs cloud-based it depend on the project and team size for simple project you can go with cloud based it's simple intuitive configuration and it's works fine , but if the project is complex and needs some graphics card or some special configuration then the self-hosted is the way to go .
+
