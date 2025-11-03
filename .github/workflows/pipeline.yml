@@ -13,8 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -54,6 +52,11 @@ jobs:
     needs: [simple_deployment_pipeline]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: "0"
+
       - name: Bump version and push tag
         uses: anothrNick/github-tag-action@1.75.0
         env:
