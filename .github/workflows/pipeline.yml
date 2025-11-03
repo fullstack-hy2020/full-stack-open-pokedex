@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
 
 jobs:
   simple_deployment_pipeline:
@@ -42,4 +45,5 @@ jobs:
           wait-on: http://localhost:5000
           command: npx cypress run --headless
       - name: Trigger deployment
+        if: ${{ github.event_name == 'push' }}
         run: curl https://api.render.com/deploy/${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
