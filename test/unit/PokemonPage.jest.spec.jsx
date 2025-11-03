@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import axiosMock from 'axios'
 import { act } from 'react-dom/test-utils'
 import '@testing-library/jest-dom'
-import PokemonPage from '../src/PokemonPage'
+import PokemonPage from '../../src/PokemonPage'
 
 import { MemoryRouter } from 'react-router-dom'
 
@@ -108,7 +108,7 @@ describe('<PokemonPage />', () => {
     await act(async () => {
       render(
         <MemoryRouter initialEntries={['/pokemon/eevee']}>
-          <PokemonPage previous={previous} next={next}/>
+          <PokemonPage previous={previous} next={next} />
         </MemoryRouter>,
       )
     })
@@ -130,5 +130,5 @@ describe('<PokemonPage />', () => {
 
     expect(screen.queryByText('Previous')).toBeNull()
     expect(screen.queryByText('Next')).toBeNull()
-  })  
+  })
 })

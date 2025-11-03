@@ -1,11 +1,21 @@
-const express = require("express");
-const app = express();
+/* eslint-env node */
+const express = require('express')
+const app = express()
 
 // get the port from env variable
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000
 
-app.use(express.static("dist"));
+app.use(express.static('dist'))
+
+// dummy endpoint
+app.get('/version', (req, res) => {
+  res.send('1') // change this value to confirm new deployment
+})
+
+app.get('/health', (req, res) => {
+  res.send('ok')
+})
 
 app.listen(PORT, () => {
-  console.log(`server started on port ${PORT}`);
-});
+  console.log(`server started on port ${PORT}`)
+})
