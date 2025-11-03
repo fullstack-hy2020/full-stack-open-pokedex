@@ -45,13 +45,13 @@ jobs:
           wait-on: http://localhost:5000
           command: npx cypress run --headless
       - name: Trigger deployment
-        if: ${{ (github.event_name == 'push' && !contains(join(github.events.commits.*.message, ' '), '#skip') }}
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
         run: curl https://api.render.com/deploy/${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
 
   tag_release:
     needs: [simple_deployment_pipeline]
     runs-on: ubuntu-latest
-    if: ${{ (github.event_name == 'push' && !contains(join(github.events.commits.*.message, ' '), '#skip') }}
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
     steps:
       - uses: actions/checkout@v4
         with:
