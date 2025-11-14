@@ -1,0 +1,61 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+      
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies 
+        run: npm install  
+      - name: Check style
+        run: npm run eslint
+      - name: run tests
+        run: npm test
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: run e2e-tests
+        run: npm run test:e2e
+
+  tag_release:
+      needs: [simple_deployment_pipeline]
+      runs-on: ubuntu-latest
+      if: ${{ (github.event_name == 'push') && !contains(github.event.head_commit.message, '#skip')}}
+      steps:
+      - uses: actions/checkout@v4
+        with: 
+          fetch-depth: '0'  
+      - name: bump it up
+        uses: anothrNick/github-tag-action@1.75.0
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_PREFIX: v
+          DEFAULT_BUMP: major
+
+  patch_release:
+      needs: [simple_deployment_pipeline]
+      runs-on: ubuntu-latest
+      if: ${{ github.event_name != 'push' }}
+      steps:
+      - uses: actions/checkout@v4
+        with: 
+          fetch-depth: '0'  
+      - name: bump it up
+        uses: anothrNick/github-tag-action@1.75.0
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_PREFIX: v
+          DEFAULT_BUMP: patch
