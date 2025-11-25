@@ -1,0 +1,71 @@
+name: Deployment pipeline
+
+env:
+  CONDITION: ${{ contains(toJson(github.event.commits.*.message), '#skip') }}
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm install
+      - name: Install Playwright binaries
+        run: npx playwright install --with-deps
+      - name: Lint
+        run: npm run eslint
+      - name: Build
+        run: npm run build
+      - name: Test
+        run: npm run test
+      - name: E2 Tests
+        run: npm run test:e2e
+      - name: Trigger deployment
+        if: ${{env.CONDITION != 'true' &&  github.event_name == 'push' }}
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+      - name: Notify success
+        if: success()
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          username: "robineisepoptahti"
+          embed-title: " ✅ Build Successful"
+          embed-description: "Build Successful"
+          embed-color: 65280
+          embed-author-name: ${{ github.event.head_commit.author.name }}
+          embed-footer-text: "Commit: ${{ github.sha }}"
+          embed-timestamp: ${{ github.event.repository.updated_at }}
+      - name: Discord notification
+        if: failure()
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          username: "robineisepoptahti"
+          embed-title: "❌ Build Failed"
+          embed-description: "Build Failed"
+          embed-color: 16711680
+          embed-author-name: ${{ github.event.head_commit.author.name }}
+          embed-footer-text: "Commit: ${{ github.sha }}"
+          embed-timestamp: ${{ github.event.repository.updated_at }}
+
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump version and push tag
+        if: ${{ env.CONDITION != 'true' && github.event_name == 'push' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+        uses: anothrNick/github-tag-action@1.75.0
