@@ -1,0 +1,17 @@
+name: Hello World  # Nombre del workflow (opcional, pero recomendado)
+
+on:  # Define cuándo se ejecuta el workflow
+  push:
+    branches: [ main ]  # Se activa en pushes a la rama 'main'
+
+jobs:  # Define los jobs (tareas) del workflow
+  build:  # Nombre del job (puede ser cualquier cosa)
+    runs-on: ubuntu-latest  # Entorno de ejecución (máquina virtual)
+
+    steps:  # Pasos dentro del job
+      - name: Print Hello World  # Nombre del paso (opcional)
+        run: echo "Hello World!"  # Comando a ejecutar (aquí usamos 'echo')
+      - name: Now it is  
+        run: date  
+      - name: Directory content
+        run: ls -l
