@@ -1,4 +1,4 @@
-name: Hellow World!
+name: Hello World!
 
 on: 
   push:
@@ -10,3 +10,8 @@ jobs:
       - name: Say Hello
         run: |
           echo "Hello World!"
+    steps:
+      - name: Current Date
+        run: | 
+          - Date
+          
