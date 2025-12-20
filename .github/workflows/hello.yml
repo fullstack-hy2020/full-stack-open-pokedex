@@ -9,12 +9,10 @@ jobs:
     steps:
       - name: Say Hello
         run: |
-          echo "Hello World!"
-jobs: 
+          echo "Hello World!" 
   date:
     runs-on: ubuntu-latest
     steps:
       - name: Current Date
-        run: | 
-          - Date
+        run: Date
           
