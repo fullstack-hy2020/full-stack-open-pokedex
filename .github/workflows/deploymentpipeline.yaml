@@ -1,0 +1,98 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies 
+        run: npm install --legacy-peer-deps 
+
+      - name: lint
+        run: npm run lint
+
+      - name: e2etest
+        run: |
+          npm start &
+          sleep 10
+          cd playwright
+          npm ci
+          npx playwright install --with-deps
+          npm test
+      
+      
+      - name: Send Discord notification
+        if: ${{ success() }}
+        uses: stegzilla/discord-notify@e9ae7f7d5d45da6be819165c3ccf78357e12bdf6
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "ALL CHECKS PASSED"
+          message: "All checks have passed successfully for commit ${{ github.sha }} on branch ${{ github.ref }}."
+          include_image: true
+          avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+          username: GitHub Notifier
+      - name: Send Discord failure notification
+        if: ${{ failure() }}
+        uses: stegzilla/discord-notify@e9ae7f7d5d45da6be819165c3ccf78357e12bdf6
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "CHECKS FAILED"
+          color: "FF0000"
+          message: "One or more checks have failed for commit ${{ github.sha }} on branch ${{ github.ref }}. Please check the GitHub Actions logs for more details."
+          include_image: true
+          avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+          username: GitHub Notifier
+
+
+
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.75.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+
+  trigger_deployment:
+    needs: [tag_release]
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+    steps:
+      - name: Trigger deployment
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+      - name: Send Discord notification
+        if: ${{ success() }}
+        uses: stegzilla/discord-notify@e9ae7f7d5d45da6be819165c3ccf78357e12bdf6
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "Deployment Triggered"
+          message: "A new deployment has been triggered for the service."
+          include_image: true
+          avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+          username: GitHub Notifier
+      - name: Send Discord failure notification
+        if: ${{ failure() }}
+        uses: stegzilla/discord-notify@e9ae7f7d5d45da6be819165c3ccf78357e12bdf6
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "Deployment Trigger Failed"
+          color: "FF0000"
+          message: "The deployment trigger has failed. Please check the GitHub Actions logs for more details."
+          include_image: true
+          avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+          username: GitHub Notifier
+            

@@ -1,0 +1,39 @@
+name: healthchecker
+
+on:
+  schedule:
+    - cron: '0 */5 * * *'
+  push:
+    branches:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+
+jobs:
+  health_check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check the deployed service URL
+      uses: jtalk/url-health-check-action@v4
+      with:
+        url: https://pokeapi.co/api/v2/pokemon/?limit=50
+        follow-redirect: false
+        max-attempts: 3 
+        retry-delay: 5s
+    - name: Send Discord notification
+      if: ${{ failure() }}
+      uses: stegzilla/discord-notify@e9ae7f7d5d45da6be819165c3ccf78357e12bdf6
+      with:
+        webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+        title: "HEALTH CHECK FAILED"
+        color: "FF0000"
+        message: "The health check for the service URL has failed. Please investigate."
+        include_image: true
+        avatar_url: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+        username: GitHub Notifier
+      
+
+   
+
+      
