@@ -9,7 +9,11 @@ describe('Pokedex', () => {
 
   test('click on pokemon', async ({ page} ) => {
     await page.goto('/')
-    await page.getByRole('link', { name: ivysaur }).click()
+    const ivysaurLink =  page.getByRole('link', { name: 'ivysaur' })
+    await expect(ivysaurLink).toBeVisible()
+    await ivysaurLink.click()
+
+    await expect(page).toHaveURL(/\/pokemon\/ivysaur$/)
     await expect(page.getByText('chlorophyll')).toBeVisible()
   })
 })
