@@ -1,0 +1,87 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+env:
+  CONDITION: ${{ contains(github.event.commits.*.message, '#next') }}
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm install
+      - name: Check style
+        run: npm run eslint
+      - name: build
+        run: npm run build
+      # - name: test
+      #   run: npm run test
+      - uses: actions/checkout@v2
+
+  check_next_in_commit_msg:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_release_can_run: ${{ steps.final.outcome == 'success' }}
+    steps:
+      - if: ${{env.CONDITION == 'true'}}
+        # id `final` is referenced in check_#next_in_commit_msg `outputs`.
+        id: final
+        run: echo
+
+  tag_release:
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: ${{ needs.check_next_in_commit_msg.outputs.tag_release_can_run == 'true'  }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
+      - name: Bump version and push tag
+        if: github.ref == 'refs/heads/main'
+        uses: anothrNick/github-tag-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+
+      - name: Send success discord message
+        if: ${{ success() }}
+        uses: rjstone/discord-webhook-notify@v2
+        with:
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: Zahirul
+          avatarUrl: https://domain/images/custom.png
+          text: New version added successFully
+          severity: info # only to make sure the embed is added
+          color: "#008000"
+          title: New version added
+          description: "Failed This is a ***SuPeR custom*** description. I hope it looks good."
+          # details: not needed because we overrode default description.
+          footer: Failed This embed was brought to you by the letter R and the number 4.
+      - name: Send failed discord message
+        if: ${{ failure() }}
+        uses: rjstone/discord-webhook-notify@v2
+        with:
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          username: Zahirul
+          avatarUrl: https://domain/images/custom.png
+          text: New version added successFully
+          severity: warn # only to make sure the embed is added
+          color: "#FF0000"
+          title: New version not added.Some thing failed.
+          description: "Failed This is a ***SuPeR custom*** description. I hope it looks good."
+          # details: not needed because we overrode default description.
+          footer: Failed This embed was brought to you by the letter R and the number 4.
