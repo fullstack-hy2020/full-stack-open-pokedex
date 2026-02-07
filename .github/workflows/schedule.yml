@@ -1,0 +1,16 @@
+name: Schedule health check
+
+on:
+  schedule:
+    - cron: '0 23 * * *'
+
+jobs:
+  check_deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check deployment
+        uses: jtalk/url-health-check-action@v4
+        with:
+          url: 'https://full-stack-open-pokedex-z5ek.onrender.com'
+          max-attempts: 5
+          retry-delay: 5s

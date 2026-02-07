@@ -1,0 +1,54 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Check styles
+        run: npm run eslint
+      - name: build
+        run: npm run build
+      - name: test
+        run: npm run test
+      - name: Trigger deployment
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+      - name: Discord notification
+        if: ${{ failure() }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@ad5235de713df3ef38022185499b02ffe93b7efe
+        with:
+          args: 'The build of ${{ github.event.repository.full_name }} has failed.'
+  tag_release:
+    needs: simple_deployment_pipeline
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '#skip') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.75.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+      - name: Discord notification
+        if: ${{ success() }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@ad5235de713df3ef38022185499b02ffe93b7efe
+        with:
+          args: 'The project ${{ github.event.repository.full_name }} has been deployed.'
