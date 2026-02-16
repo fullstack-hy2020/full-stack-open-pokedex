@@ -4,12 +4,13 @@
   "description": "Full Stack Open",
   "main": "src/index.js",
   "scripts": {
-    "start": "webpack-dev-server --open --mode development",
-    "start-prod": "node app.js",
-    "test": "jest",
-    "eslint": "eslint './**/*.{js,jsx}'",
-    "build": "webpack --mode production"
-  },
+  "start": "webpack-dev-server --open --mode development",
+  "start-prod": "node app.js",
+  "test": "jest",
+  "test:e2e": "cypress run",
+  "eslint": "eslint './**/*.{js,jsx}'",
+  "build": "webpack --mode production"
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/smartlyio/fullstackopen-cicd.git"
@@ -33,6 +34,7 @@
     "babel-jest": "^29.7.0",
     "babel-loader": "^9.1.3",
     "css-loader": "^6.8.1",
+    "cypress": "^12.17.4",
     "eslint": "^8.56.0",
     "eslint-plugin-jest": "^27.6.1",
     "eslint-plugin-react": "^7.33.2",

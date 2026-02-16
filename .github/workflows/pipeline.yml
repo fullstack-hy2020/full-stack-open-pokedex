@@ -1,0 +1,49 @@
+name: CI pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize]
+
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run linter
+        run: npm run eslint
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Run e2e tests
+        uses: cypress-io/github-action@v5
+        with:
+          command: npm run test:e2e
+          start: npm run start-prod
+          wait-on: http://localhost:5000
+
+      - name: Trigger Render Deploy
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
+
