@@ -1,0 +1,41 @@
+name: Deployment pipeline
+
+on: 
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  simple_deployment_pipeline:
+    # if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Check style
+        run: npm run eslint
+      - run: npm run build
+      - run: npm run test  
+
+  tag_release: 
+    if: ${{ github.event_name == 'push' }}
+    needs: [simple_deployment_pipeline]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # REQUIRED for tagging
+
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@4ed44965e0db8dab2b466a16da04aec3cc312fd8
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#forgot to add #patch
+#removed the dry run 
