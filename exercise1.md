@@ -1,0 +1,6 @@
+The language I have selected is Python.In the Python ecosystem, linting - the process of analysing code without running it to detect bugs, security issues and stylistic errors is done  through tools like flake8, pyLint, black and myPy.pyTest is the industry standard for running unit, functional and integration tests. tox automates running tests against multiple Python versions to ensure compatibility.
+Modern Python packaging adheres to PEP 517/518, using pyproject.toml.
+The build module is the current standard for creating distributions.Typically executed in CI/CD pipelines (e.g., GitHub Actions) to automate building and publishing to PyPI.
+There is no dearth of options for CI/CD. They include integrated platforms, managed cloud services, and open-source solutions.Some of them are GitLab, CircleCI, AzureDevOps, AWS CodePipeline, TravisCI, Buildkite and many more.
+
+For a setup where 6 developers are working on a project that is in active development and will be released soon the ideal choice seems to be that of a cloud-based environment since the project does not seem to be very big (multiple teams are not working on it) and no special requirements have been mentioned. Self-hosted environment is difficult to set up, is costlier but provides better security and flexibility. The trade-off makes sense for a large, complicated project.

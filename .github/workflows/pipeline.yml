@@ -1,0 +1,89 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize]
+
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+
+      - name: Check style
+        run: npm run eslint
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm run test
+
+  deploy_to_render:
+      needs: simple_deployment_pipeline
+      if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip')}}
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+        - name: Create deployment
+          uses: JorgeLNJunior/render-deploy@v1.4.4
+          with:
+            service_id: ${{ secrets.RENDER_SERVICE_ID }}
+            api_key: ${{ secrets.RENDER_API_KEY }}
+            wait_deploy: true
+
+
+        - name: Notify Discord Success
+          if: success()
+          run: |
+            curl -H "Content-Type: application/json" \
+            -d '{
+              "embeds": [{
+              "title": "Deployment Success",
+              "description": "New version is LIVE!",
+              "url": "https://full-stack-open-pokedex-24hv.onrender.com",
+              "color": 65280
+            }]
+            }' \
+            ${{ secrets.DISCORD_WEBHOOK }}
+
+        - name: Notify Discord Failure
+          if: failure()
+          run: |
+            curl -H "Content-Type: application/json" \
+            -d '{
+              "embeds": [{
+              "title": "Build Failed",
+              "description": "**Commit:** `${{ github.sha }}`\n**Author:** ${{ github.actor }}\n**Logs:** [View here](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})",
+              "color": 16711680
+            }]
+            }' \
+            ${{ secrets.DISCORD_WEBHOOK }}
+
+  tag_release:
+    needs: deploy_to_render
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip')}}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.75.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+
+
