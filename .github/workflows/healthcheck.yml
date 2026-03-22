@@ -1,0 +1,31 @@
+name: Periodic Health Check
+
+on:
+  schedule:
+    # Runs every 5 minutes. Adjust using cron syntax.
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows you to test it manually immediately
+
+jobs:
+  periodic_health_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the deployed service URL
+        uses: jasonkeller/url-health-check@v1.1.2
+        with:
+          url: https://full-stack-open-pokedex-aged-brook-8432.fly.dev
+          # Follow redirects if necessary
+          follow-redirect: false
+          # Fail if the response takes longer than 5 seconds
+          max-attempts: 3
+          retry-delay: 5s
+
+      - name: Alert on failure
+        if: failure()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: failure
+          content: "Health check failed! The application might be down."
+          title: "Service Outage Detected"
+          color: 0xff0000

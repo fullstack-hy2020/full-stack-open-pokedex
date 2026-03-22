@@ -18,7 +18,7 @@ const pokemonList = [{
 describe('<PokemonList />', () => {
   it('should render items', () => {
     render(
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <PokemonList pokemonList={pokemonList} />
       </BrowserRouter>
     )

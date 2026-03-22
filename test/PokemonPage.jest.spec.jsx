@@ -1,7 +1,6 @@
-import React from 'react'
+import React, { act } from 'react'
 import { render, screen } from '@testing-library/react'
 import axiosMock from 'axios'
-import { act } from 'react-dom/test-utils'
 import '@testing-library/jest-dom'
 import PokemonPage from '../src/PokemonPage'
 
@@ -78,7 +77,13 @@ describe('<PokemonPage />', () => {
 
     await act(async () => {
       render(
-        <MemoryRouter initialEntries={['/pokemon/eevee']}>
+        <MemoryRouter
+          initialEntries={['/pokemon/eevee']}
+          future={{
+            v7_relativeSplatPath: true,
+            v7_startTransition: true
+          }}
+        >
           <PokemonPage />
         </MemoryRouter>,
       )
@@ -93,7 +98,13 @@ describe('<PokemonPage />', () => {
 
     await act(async () => {
       render(
-        <MemoryRouter initialEntries={['/pokemon/eevee']}>
+        <MemoryRouter
+          initialEntries={['/pokemon/eevee']}
+          future={{
+            v7_relativeSplatPath: true,
+            v7_startTransition: true
+          }}
+        >
           <PokemonPage />
         </MemoryRouter>,
       )
@@ -107,7 +118,13 @@ describe('<PokemonPage />', () => {
 
     await act(async () => {
       render(
-        <MemoryRouter initialEntries={['/pokemon/eevee']}>
+        <MemoryRouter
+          initialEntries={['/pokemon/eevee']}
+          future={{
+            v7_relativeSplatPath: true,
+            v7_startTransition: true
+          }}
+        >
           <PokemonPage previous={previous} next={next}/>
         </MemoryRouter>,
       )
@@ -122,7 +139,13 @@ describe('<PokemonPage />', () => {
 
     await act(async () => {
       render(
-        <MemoryRouter initialEntries={['/pokemon/eevee']}>
+        <MemoryRouter
+          initialEntries={['/pokemon/eevee']}
+          future={{
+            v7_relativeSplatPath: true,
+            v7_startTransition: true
+          }}
+        >
           <PokemonPage />
         </MemoryRouter>,
       )
@@ -130,5 +153,5 @@ describe('<PokemonPage />', () => {
 
     expect(screen.queryByText('Previous')).toBeNull()
     expect(screen.queryByText('Next')).toBeNull()
-  })  
+  })
 })
