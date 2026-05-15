@@ -1,0 +1,29 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+pull_request:         # <--- ADD THESE THREE LINES
+    branches: [main]
+    types: [opened, synchronize]
+jobs:
+  simple_deployment_pipeline:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Check style
+        run: npm run eslint
+      - name: Build
+        run: npm run build
+      - name: Run tests
+        run: npm test
+      - name: Deploy to Render
+     if: ${{ github.event_name == 'push' }}
+        # This step only runs if all previous steps (lint, build, test) passed
+  run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
