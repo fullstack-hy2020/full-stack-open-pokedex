@@ -1,0 +1,23 @@
+name: Hello World
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches: [main]
+
+jobs:
+  hello_world_job:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Print hello world
+        run: echo "Hello World!"
+
+      - name: Print date
+        run: date
+
+      - name: List directory contents
+        run: ls -l
