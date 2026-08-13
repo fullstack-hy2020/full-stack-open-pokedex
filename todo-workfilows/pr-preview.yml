@@ -1,0 +1,173 @@
+name: PR Preview
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+    branches:
+      - dev
+      - pre
+      - main
+      - 'iteration/**'
+
+concurrency:
+  group: preview-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  prepare_preview:
+    name: Prepare preview for PR #${{ github.event.pull_request.number }}
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout pull request
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run eslint
+
+      - name: Unit tests
+        run: npm test -- --ci --runInBand
+
+      - name: Build app bundle
+        run: npm run build
+
+      - name: Run Cypress
+        uses: cypress-io/github-action@v6
+        with:
+          command: npm run test:e2e
+          start: npm run start-prod
+          wait-on: http://localhost:5000
+          wait-on-timeout: 120
+
+      - name: Upload preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-pr-${{ github.event.pull_request.number }}
+          path: |
+            dist
+            app.js
+            package.json
+            package-lock.json
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy_preview:
+    name: Deploy preview for PR #${{ github.event.pull_request.number }}
+    needs: prepare_preview
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    environment:
+      name: preview-pr-${{ github.event.pull_request.number }}
+
+    steps:
+      - name: Download preview artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: preview-pr-${{ github.event.pull_request.number }}
+
+      - name: Resolve preview settings
+        id: preview
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PREVIEW_DEPLOY_ROOT: ${{ vars.PREVIEW_DEPLOY_ROOT }}
+          PREVIEW_PORT_BASE: ${{ vars.PREVIEW_PORT_BASE }}
+        run: |
+          set -euo pipefail
+          test -n "$PREVIEW_DEPLOY_ROOT" || { echo "Missing PREVIEW_DEPLOY_ROOT repository variable"; exit 1; }
+          test -n "$PREVIEW_PORT_BASE" || { echo "Missing PREVIEW_PORT_BASE repository variable"; exit 1; }
+
+          DEPLOY_PATH="${PREVIEW_DEPLOY_ROOT%/}/pr-$PR_NUMBER"
+          PM2_APP_NAME="pokedex-pr-$PR_NUMBER"
+          PORT="$((PREVIEW_PORT_BASE + PR_NUMBER))"
+
+          echo "deploy_path=$DEPLOY_PATH" >> "$GITHUB_OUTPUT"
+          echo "pm2_app_name=$PM2_APP_NAME" >> "$GITHUB_OUTPUT"
+          echo "port=$PORT" >> "$GITHUB_OUTPUT"
+
+      - name: Upload preview files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PREVIEW_SERVER_HOST }}
+          username: ${{ secrets.PREVIEW_SERVER_USER }}
+          key: ${{ secrets.PREVIEW_SSH_PRIVATE_KEY }}
+          source: 'dist,app.js,package.json,package-lock.json'
+          target: ${{ steps.preview.outputs.deploy_path }}
+
+      - name: Restart preview application
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PREVIEW_SERVER_HOST }}
+          username: ${{ secrets.PREVIEW_SERVER_USER }}
+          key: ${{ secrets.PREVIEW_SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd "${{ steps.preview.outputs.deploy_path }}"
+            npm ci --omit=dev
+            export PORT="${{ steps.preview.outputs.port }}"
+            if pm2 describe "${{ steps.preview.outputs.pm2_app_name }}" > /dev/null 2>&1; then
+              pm2 restart "${{ steps.preview.outputs.pm2_app_name }}" --update-env
+            else
+              pm2 start app.js --name "${{ steps.preview.outputs.pm2_app_name }}"
+            fi
+            pm2 save
+
+  cleanup_preview:
+    name: Cleanup preview for PR #${{ github.event.pull_request.number }}
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    environment:
+      name: preview-pr-${{ github.event.pull_request.number }}
+
+    steps:
+      - name: Resolve preview settings
+        id: preview
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PREVIEW_DEPLOY_ROOT: ${{ vars.PREVIEW_DEPLOY_ROOT }}
+        run: |
+          set -euo pipefail
+          test -n "$PREVIEW_DEPLOY_ROOT" || { echo "Missing PREVIEW_DEPLOY_ROOT repository variable"; exit 1; }
+
+          DEPLOY_PATH="${PREVIEW_DEPLOY_ROOT%/}/pr-$PR_NUMBER"
+          PM2_APP_NAME="pokedex-pr-$PR_NUMBER"
+
+          echo "deploy_path=$DEPLOY_PATH" >> "$GITHUB_OUTPUT"
+          echo "pm2_app_name=$PM2_APP_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Remove preview deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PREVIEW_SERVER_HOST }}
+          username: ${{ secrets.PREVIEW_SERVER_USER }}
+          key: ${{ secrets.PREVIEW_SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            PREVIEW_DEPLOY_ROOT="${{ vars.PREVIEW_DEPLOY_ROOT }}"
+            DEPLOY_PATH="${{ steps.preview.outputs.deploy_path }}"
+            PM2_APP_NAME="${{ steps.preview.outputs.pm2_app_name }}"
+
+            case "$DEPLOY_PATH" in
+              "${PREVIEW_DEPLOY_ROOT%/}"/pr-*) ;;
+              *) echo "Refusing to delete unexpected path: $DEPLOY_PATH"; exit 1 ;;
+            esac
+
+            pm2 delete "$PM2_APP_NAME" || true
+            rm -rf "$DEPLOY_PATH"
+            pm2 save

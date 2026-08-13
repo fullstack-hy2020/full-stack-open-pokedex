@@ -1,0 +1,236 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - dev
+      - pre
+      - main
+      - 'release/**'
+      - 'iteration/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  resolve_deployment:
+    name: Resolve deployment target
+    if: github.event_name == 'push' && (contains(fromJSON('["dev","pre"]'), github.ref_name) || startsWith(github.ref, 'refs/heads/release/') || startsWith(github.ref, 'refs/heads/iteration/'))
+    runs-on: ubuntu-24.04
+    outputs:
+      deploy_path: ${{ steps.target.outputs.deploy_path }}
+      environment_name: ${{ steps.target.outputs.environment_name }}
+      is_iteration: ${{ steps.target.outputs.is_iteration }}
+      pm2_app_name: ${{ steps.target.outputs.pm2_app_name }}
+      port: ${{ steps.target.outputs.port }}
+
+    steps:
+      - name: Resolve target
+        id: target
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          ITERATION_DEPLOY_ROOT: ${{ vars.ITERATION_DEPLOY_ROOT }}
+          ITERATION_DEV_PORT_BASE: ${{ vars.ITERATION_DEV_PORT_BASE }}
+          ITERATION_PRE_PORT_BASE: ${{ vars.ITERATION_PRE_PORT_BASE }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$REF_NAME" == "dev" || "$REF_NAME" == "pre" ]]; then
+            echo "environment_name=$REF_NAME" >> "$GITHUB_OUTPUT"
+            echo "is_iteration=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "$REF_NAME" == release/* ]]; then
+            echo "environment_name=pre" >> "$GITHUB_OUTPUT"
+            echo "is_iteration=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          REST="${REF_NAME#iteration/}"
+          STAGE="${REST##*/}"
+          NAME="${REST%/*}"
+
+          if [[ "$STAGE" != "dev" && "$STAGE" != "pre" ]]; then
+            echo "Iteration branches must be named iteration/<name>/dev or iteration/<name>/pre"
+            exit 1
+          fi
+
+          if [[ -z "$NAME" || "$NAME" == "$REST" ]]; then
+            echo "Iteration branch name is missing. Use iteration/<name>/$STAGE"
+            exit 1
+          fi
+
+          SLUG="$(echo "$NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
+          test -n "$SLUG" || { echo "Iteration name must contain at least one letter or number"; exit 1; }
+          test -n "$ITERATION_DEPLOY_ROOT" || { echo "Missing ITERATION_DEPLOY_ROOT repository variable"; exit 1; }
+
+          if [[ "$STAGE" == "dev" ]]; then
+            test -n "$ITERATION_DEV_PORT_BASE" || { echo "Missing ITERATION_DEV_PORT_BASE repository variable"; exit 1; }
+            PORT_BASE="$ITERATION_DEV_PORT_BASE"
+          else
+            test -n "$ITERATION_PRE_PORT_BASE" || { echo "Missing ITERATION_PRE_PORT_BASE repository variable"; exit 1; }
+            PORT_BASE="$ITERATION_PRE_PORT_BASE"
+          fi
+
+          HASH="$(printf "%s" "$SLUG" | cksum | awk '{print $1}')"
+          echo "deploy_path=${ITERATION_DEPLOY_ROOT%/}/$SLUG/$STAGE" >> "$GITHUB_OUTPUT"
+          echo "environment_name=iteration-$SLUG-$STAGE" >> "$GITHUB_OUTPUT"
+          echo "is_iteration=true" >> "$GITHUB_OUTPUT"
+          echo "pm2_app_name=pokedex-$SLUG-$STAGE" >> "$GITHUB_OUTPUT"
+          echo "port=$((PORT_BASE + HASH % 500))" >> "$GITHUB_OUTPUT"
+
+  quality:
+    name: Lint, test and build
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run eslint
+
+      - name: Unit tests
+        run: npm test -- --ci --runInBand
+
+      - name: Build app bundle
+        run: npm run build
+
+      - name: Upload app bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-bundle
+          path: dist
+          if-no-files-found: error
+          retention-days: 7
+
+  e2e:
+    name: Cypress E2E tests
+    needs: quality
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download production bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: app-bundle
+          path: dist
+
+      - name: Run Cypress
+        uses: cypress-io/github-action@v6
+        with:
+          command: npm run test:e2e
+          start: npm run start-prod
+          wait-on: http://localhost:5000
+          wait-on-timeout: 120
+
+  deploy:
+    name: Deploy to ${{ needs.resolve_deployment.outputs.environment_name }}
+    needs:
+      - resolve_deployment
+      - quality
+      - e2e
+    if: needs.resolve_deployment.result == 'success'
+    runs-on: ubuntu-24.04
+    environment:
+      name: ${{ needs.resolve_deployment.outputs.environment_name }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download tested production bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: app-bundle
+          path: dist
+
+      - name: Resolve deployment settings
+        id: deployment
+        env:
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          PM2_APP_NAME: ${{ vars.PM2_APP_NAME }}
+          PORT: ${{ vars.PORT }}
+          RESOLVED_DEPLOY_PATH: ${{ needs.resolve_deployment.outputs.deploy_path }}
+          RESOLVED_IS_ITERATION: ${{ needs.resolve_deployment.outputs.is_iteration }}
+          RESOLVED_PM2_APP_NAME: ${{ needs.resolve_deployment.outputs.pm2_app_name }}
+          RESOLVED_PORT: ${{ needs.resolve_deployment.outputs.port }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$RESOLVED_IS_ITERATION" == "true" ]]; then
+            DEPLOY_PATH="$RESOLVED_DEPLOY_PATH"
+            PM2_APP_NAME="$RESOLVED_PM2_APP_NAME"
+            PORT="$RESOLVED_PORT"
+          fi
+
+          test -n "$DEPLOY_PATH" || { echo "Missing DEPLOY_PATH environment variable"; exit 1; }
+          test -n "$PM2_APP_NAME" || { echo "Missing PM2_APP_NAME environment variable"; exit 1; }
+          test -n "$PORT" || { echo "Missing PORT environment variable"; exit 1; }
+
+          echo "deploy_path=$DEPLOY_PATH" >> "$GITHUB_OUTPUT"
+          echo "pm2_app_name=$PM2_APP_NAME" >> "$GITHUB_OUTPUT"
+          echo "port=$PORT" >> "$GITHUB_OUTPUT"
+
+      - name: Validate deployment credentials
+        env:
+          SERVER_HOST: ${{ needs.resolve_deployment.outputs.is_iteration == 'true' && secrets.ITERATION_SERVER_HOST || secrets.SERVER_HOST }}
+          SERVER_USER: ${{ needs.resolve_deployment.outputs.is_iteration == 'true' && secrets.ITERATION_SERVER_USER || secrets.SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ needs.resolve_deployment.outputs.is_iteration == 'true' && secrets.ITERATION_SSH_PRIVATE_KEY || secrets.SSH_PRIVATE_KEY }}
+        run: |
+          test -n "$SERVER_HOST" || { echo "Missing deployment host secret"; exit 1; }
+          test -n "$SERVER_USER" || { echo "Missing deployment user secret"; exit 1; }
+          test -n "$SSH_PRIVATE_KEY" || { echo "Missing deployment private key secret"; exit 1; }
+
+      - name: Upload release files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ needs.resolve_deployment.outputs.is_iteration == 'true' && secrets.ITERATION_SERVER_HOST || secrets.SERVER_HOST }}
+          username: ${{ needs.resolve_deployment.outputs.is_iteration == 'true' && secrets.ITERATION_SERVER_USER || secrets.SERVER_USER }}
+          key: ${{ needs.resolve_deployment.outputs.is_iteration == 'true' && secrets.ITERATION_SSH_PRIVATE_KEY || secrets.SSH_PRIVATE_KEY }}
+          source: 'dist,app.js,package.json,package-lock.json'
+          target: ${{ steps.deployment.outputs.deploy_path }}
+
+      - name: Restart application
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ needs.resolve_deployment.outputs.is_iteration == 'true' && secrets.ITERATION_SERVER_HOST || secrets.SERVER_HOST }}
+          username: ${{ needs.resolve_deployment.outputs.is_iteration == 'true' && secrets.ITERATION_SERVER_USER || secrets.SERVER_USER }}
+          key: ${{ needs.resolve_deployment.outputs.is_iteration == 'true' && secrets.ITERATION_SSH_PRIVATE_KEY || secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd "${{ steps.deployment.outputs.deploy_path }}"
+            npm ci --omit=dev
+            export PORT="${{ steps.deployment.outputs.port }}"
+            if pm2 describe "${{ steps.deployment.outputs.pm2_app_name }}" > /dev/null 2>&1; then
+              pm2 restart "${{ steps.deployment.outputs.pm2_app_name }}" --update-env
+            else
+              pm2 start app.js --name "${{ steps.deployment.outputs.pm2_app_name }}"
+            fi
+            pm2 save
