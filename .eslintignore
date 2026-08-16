@@ -1,3 +1,6 @@
 webpack.config.js
 node_modules/
 dist/
+e2e-tests
+test-results/
+playwright-report/
