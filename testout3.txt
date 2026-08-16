@@ -1,0 +1,86 @@
+
+> fullstackopen-cicd@1.0.0 test
+> jest
+
+PASS test/PokemonList.jest.spec.jsx (54.189 s)
+PASS test/App.jest.spec.jsx (55.122 s)
+FAIL test/PokemonPage.jest.spec.jsx (55.353 s)
+  ● Console
+
+    console.log
+      hiddenAbility= {
+        ability: {
+          name: 'anticipation',
+          url: 'https://pokeapi.co/api/v2/ability/107/'
+        },
+        is_hidden: true,
+        slot: 3
+      }
+
+      at log (src/PokemonPage.jsx:29:11)
+
+    console.log
+      hiddenAbility= {
+        ability: {
+          name: 'anticipation',
+          url: 'https://pokeapi.co/api/v2/ability/107/'
+        },
+        is_hidden: true,
+        slot: 3
+      }
+
+      at log (src/PokemonPage.jsx:29:11)
+
+    console.log
+      hiddenAbility= {
+        ability: {
+          name: 'anticipation',
+          url: 'https://pokeapi.co/api/v2/ability/107/'
+        },
+        is_hidden: true,
+        slot: 3
+      }
+
+      at log (src/PokemonPage.jsx:29:11)
+
+    console.log
+      hiddenAbility= {
+        ability: {
+          name: 'anticipation',
+          url: 'https://pokeapi.co/api/v2/ability/107/'
+        },
+        is_hidden: true,
+        slot: 3
+      }
+
+      at log (src/PokemonPage.jsx:29:11)
+
+  ● <PokemonPage /> › should render previous and next urls if they exist
+
+    expect(element).toHaveAttribute("href", "/pokemon/vaporeon") // element.getAttribute("href") === "/pokemon/vaporeon"
+
+    Expected the element to have attribute:
+      href="/pokemon/vaporeon"
+    Received:
+      href="/pokemon/ditto"
+
+      115 |
+      116 |     expect(screen.getByText('Previous')).toHaveAttribute('href', '/pokemon/ditto')
+    > 117 |     expect(screen.getByText('Next')).toHaveAttribute('href', '/pokemon/vaporeon')
+          |                                      ^
+      118 |   })
+      119 |
+      120 |   it('should not render previous and next urls if none exist', async () => {
+
+      at toHaveAttribute (test/PokemonPage.jest.spec.jsx:117:38)
+      at tryCatch (node_modules/@babel/runtime/helpers/regeneratorRuntime.js:45:16)
+      at Generator.<anonymous> (node_modules/@babel/runtime/helpers/regeneratorRuntime.js:133:17)
+      at Generator.next (node_modules/@babel/runtime/helpers/regeneratorRuntime.js:74:21)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:24)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:9)
+
+Test Suites: 1 failed, 2 passed, 3 total
+Tests:       1 failed, 6 passed, 7 total
+Snapshots:   0 total
+Time:        119.888 s
+Ran all test suites.
