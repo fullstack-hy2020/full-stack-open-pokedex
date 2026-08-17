@@ -1,0 +1,26 @@
+name: Hello World
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  hello_world_job:
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Say hello
+        run: echo "¡Hola mundo!"
+
+      - name: Show date
+        run: date
+
+      - name: List directory
+        run: ls -l
